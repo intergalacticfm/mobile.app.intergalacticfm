@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>No Station Such Dedication</title>
+    <link rel="stylesheet" type="text/css" href="./styles.css">
+    <link rel="stylesheet" type="text/css" href="./audioplayer.css">
+
+    <link rel="icon" type="image/x-icon" href="https://intergalactic.fm/themes/custom/ifm/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <!-- Header -->
+    <h1><img src="https://intergalactic.fm/themes/custom/ifm/logo.svg" alt="IFM logo"></h1>
+    <h2>INTERGALACTIC FM</h2>
+
+    <!-- Stations -->
+    <div class="container">
+        <button id="title0" class="title">
+        </button>
+        <br><br>
+        <button id="title1">
+        </button>
+        <br><br>
+        <button id="title2">
+        </button>
+        <br><br>
+    </div>
+    <br><br>
+
+    <!-- Now Playing -->
+    <div id="trackInfoModal" class="modal">
+        <button id="stopButton" class="close">x</button>
+        <div id="track-meta">
+            <h5 id="nowPlaying"> </h5>
+        </div>
+        <br>
+        <div id="nowPlayingCover"></div>
+        <h6 id="nowPlayingExt"></h6>
+
+    </div>
+    <!-- Scripts -->
+    <script src="./howler.core.js"></script>
+    <script src="./radio.js"></script>
+</body>
+
+</html>
