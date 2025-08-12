@@ -4,7 +4,7 @@ var currentNowPlayingUrl;
 var nowPlayingRequestTimer;
 var selectedChannel;
 // where all streaming url and radio info are fetched from
-const STATIONS_JSON_URL = 'https://www.intergalactic.fm/ifm-system/stations.json';
+const STATIONS_JSON_URL = 'https://intergalactic.fm/sd/stations.json';
 const NOW_PLAYING_REQUEST_TIMEOUT_MSEC = 4000;
 const NOW_PLAYING_REQUEST_PREFIX = 'https://www.intergalactic.fm/now-playing?channel=';
 const NOW_PLAYING_PICTURE_REQUEST_PREFIX = 'https://www.intergalactic.fm/channel-content/';
@@ -17,6 +17,7 @@ const META_TAGS_SPLIT_CHAR = '|';
 const LINE_BREAK = '<br>';
 const VJS_PLAY_CONTROL_CLASS = 'vjs-play-control';
 const VJS_PLAYING_CLASS = 'vjs-playing';
+const PAGE_TITLE = 'Intergalactic FM';
 
 elms.forEach(function (elm) {
     window[elm] = document.getElementById(elm);
@@ -111,24 +112,12 @@ Radio.prototype = {
         if (sound) {
             sound.unload();
         }
-        feedHTML(NOW_PLAYING_DIV_ID, EMPTY_VAL);
-        feedHTML(NOW_PLAYING_DIV_EXT_ID, EMPTY_VAL);
-        feedHTML(NOW_PLAYING_COVER_DIV_ID, EMPTY_VAL);
-        clearTimeout(nowPlayingRequestTimer);
-        selectedChannel = EMPTY_VAL;
-        previousTrackTitle = EMPTY_VAL;
-    },
-
-    changeVolume: function (volumeAmount) {
-        var self = this;
-        var sound = self.stations[self.index].howl;
-        sound.volume(volumeAmount);
+        reset();
     }
 };
 
 // Radio object, empty, to be filled with fetchStations()
 var radio = new Radio([]);
-
 
 /* requests stations info and stream url from IFM server STATIONS_JSON_URL */
 async function fetchStations() {
@@ -138,7 +127,6 @@ async function fetchStations() {
     var cbsInfo = stationsJson.stations[0];
     var dfInfo = stationsJson.stations[1];
     var tdmInfo = stationsJson.stations[2];
-    console.log(cbsInfo.url);
     radio = new Radio([
         {
             title: cbsInfo.name,
@@ -171,12 +159,12 @@ async function getNowPlaying() {
                 // new track
                 feedNowPlaying(title);
                 previousTrackTitle = title;
+                document.title = title;
             }
         }
     } catch (error) {
         console.log(error);
-        clearTimeout(nowPlayingRequestTimer);
-        //manageError(error);
+        reset();
     }
     nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
 }
@@ -213,9 +201,7 @@ function feedNowPlaying(value) {
         }
 
     } else {
-        feedHTML(NOW_PLAYING_DIV_ID, EMPTY_VAL);
-        feedHTML(NOW_PLAYING_DIV_EXT_ID, EMPTY_VAL);
-        feedHTML(NOW_PLAYING_COVER_DIV_ID, EMPTY_VAL);
+        reset();
     }
 }
 
@@ -227,8 +213,18 @@ async function extractCoverFromChannelContent() {
     var endOfCoverImgIndex = body.indexOf('alt=""/>') + 10;
     var extractedCoverHTML = body.substring(startOfCoverImgIndex, endOfCoverImgIndex);
     // clean IFM inherited website styling
-    extractedCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="100%"').replace('height="100"', 'height="100%"');
-    feedHTML(NOW_PLAYING_COVER_DIV_ID, extractedCoverHTML);
+    var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="100%"').replace('height="100"', 'height="100%"');
+    feedHTML(NOW_PLAYING_COVER_DIV_ID, extractedCleanCoverHTML);
+}
+
+function reset() {
+    feedHTML(NOW_PLAYING_DIV_ID, EMPTY_VAL);
+    feedHTML(NOW_PLAYING_DIV_EXT_ID, EMPTY_VAL);
+    feedHTML(NOW_PLAYING_COVER_DIV_ID, EMPTY_VAL);
+    clearTimeout(nowPlayingRequestTimer);
+    selectedChannel = EMPTY_VAL;
+    previousTrackTitle = EMPTY_VAL;
+    document.title = PAGE_TITLE;
 }
 
 function feedHTML(elementId, value) {

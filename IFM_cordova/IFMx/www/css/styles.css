@@ -1,3 +1,8 @@
+@font-face {
+    font-family: 'Michroma-Regular';
+    src: url('Michroma-Regular.ttf');
+}
+
 h1 {
     display: flex;
     justify-content: center;
@@ -6,6 +11,7 @@ h1 {
 h2 {
     display: flex;
     justify-content: center;
+    font-size: 1em;
 }
 
 h5 {
@@ -23,32 +29,29 @@ h5 {
 body {
     color: white;
     background-color: black;
-    font-family: monospace, monospace;
+    font-family: Michroma-Regular;
     font-size: 1em;
+}
+
+.channel {
+    border-radius: 4px;
+    background-color: black;
+    font-family: Michroma-Regular;
 }
 
 #title0 {
     color: white;
     border-color: red;
-    border-radius: 4px;
-    background-color: black;
-    font-family: monospace, monospace;
 }
 
 #title1 {
     color: white;
     border-color: yellow;
-    border-radius: 4px;
-    background-color: black;
-    font-family: monospace, monospace;
 }
 
 #title2 {
     color: white;
     border-color: cornflowerblue;
-    border-radius: 4px;
-    background-color: black;
-    font-family: monospace, monospace;
 }
 
 table {
@@ -60,38 +63,6 @@ table {
     text-align: left;
 }
 
-.live {
-    text-align: left;
-    opacity: 0;
-    text-shadow: none;
-    color: red;
-    font-family: monospace, monospace;
-    font-size: 0.3em;
-}
-
-.circle {
-
-    border-radius: 50%;
-    box-shadow: 0px 0px 1em 1em #ffffff;
-}
-
-.pulse {
-    animation: pulse-animation 2s infinite;
-}
-
-@keyframes pulse-animation {
-    0% {
-        box-shadow: 0 0 0 0px red;
-    }
-
-    100% {
-        box-shadow: 0 0 0 5px rgba(0, 0, 0, 0);
-    }
-}
-
-.red {
-    background: red;
-}
 
 /* The Modal (background) */
 .modal {
@@ -111,6 +82,8 @@ table {
     /* Enable scroll if needed */
     background-color: black;
     justify-content: center;
+    font-family: Michroma-Regular;
+    font-size: 1em;
 
 }
 
