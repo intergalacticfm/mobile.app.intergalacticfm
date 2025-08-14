@@ -17,7 +17,7 @@ const META_TAGS_SPLIT_CHAR = '|';
 const LINE_BREAK = '<br>';
 const VJS_PLAY_CONTROL_CLASS = 'vjs-play-control';
 const VJS_PLAYING_CLASS = 'vjs-playing';
-const PAGE_TITLE = 'Intergalactic FM';
+const PAGE_TITLE_DEFAULT = 'Intergalactic FM';
 
 elms.forEach(function (elm) {
     window[elm] = document.getElementById(elm);
@@ -153,13 +153,14 @@ async function getNowPlaying() {
     try {
         const response = await fetch(currentNowPlayingUrl);
         const trackMetadata = await response.json();
+        setTrackMetadata(trackMetadata);
+
         if (trackMetadata) {
-            var title = trackMetadata.title;
-            if (previousTrackTitle != title) {
+            if (previousTrackTitle != trackMetadata.title) {
+                var newTrack = trackMetadata.title;
                 // new track
-                feedNowPlaying(title);
-                previousTrackTitle = title;
-                document.title = title;
+                feedNowPlaying(newTrack);
+                previousTrackTitle = newTrack;
             }
         }
     } catch (error) {
@@ -169,10 +170,35 @@ async function getNowPlaying() {
     nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
 }
 
+function setTrackMetadata(trackMetadata) {
+    // example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
+    const trackMetadatas = trackMetadata.title.split('|');
+    var artist_title = trackMetadatas[0];
+    var artist = artist_title.split(' - ')[0].trim();
+    var title = artist_title.split(' - ')[1].trim();
+    var album = trackMetadatas[1].trim();
+    if ("mediaSession" in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: title,
+            artist: artist,
+            album: album,
+            artwork: [
+                {
+                    src: "./icon.png",
+                    sizes: "96x96",
+                    type: "image/png",
+            }
+        ]
+        });
+
+    }
+
+}
+
 // populate the now playing html
-function feedNowPlaying(value) {
-    if (value) {
-        var fields = value.split(META_TAGS_SPLIT_CHAR);
+function feedNowPlaying(title) {
+    if (title) {
+        var fields = title.split(META_TAGS_SPLIT_CHAR);
         var main = fields[0];
         var otherInfo = fields.slice(1);
         var otherFieldsProcessed = EMPTY_VAL;
@@ -184,7 +210,7 @@ function feedNowPlaying(value) {
         }
         feedHTML(NOW_PLAYING_DIV_ID, main);
         feedHTML(NOW_PLAYING_DIV_EXT_ID, otherFieldsProcessed);
-        extractCoverFromChannelContent();
+        extractCoverFromChannelContent(title);
         // Get the modal
         var modal = document.getElementById("trackInfoModal");
         // Get the button that opens the modal
@@ -206,7 +232,7 @@ function feedNowPlaying(value) {
 }
 
 /* cover and track info are fetched from intergalactic.fm, but need parsing */
-async function extractCoverFromChannelContent() {
+async function extractCoverFromChannelContent(title) {
     var response = await fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + selectedChannel);
     var body = await response.text();
     var startOfCoverImgIndex = body.indexOf('<img');
@@ -215,6 +241,29 @@ async function extractCoverFromChannelContent() {
     // clean IFM inherited website styling
     var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="100%"').replace('height="100"', 'height="100%"');
     feedHTML(NOW_PLAYING_COVER_DIV_ID, extractedCleanCoverHTML);
+    changeLockScreenPreviewImage(title, extractedCleanCoverHTML);
+}
+
+/* lock screen metadata */
+// TODO: PARSE TRACK METADATA AND SET CORRECTLY
+/* iOS code for artwork in lockscreen: iOS prevent the direct link from URL, it can be downloaded and used, but this consumes memory, we don't want this, so better to just use a static icon 
+var coverPath = cordova.file.applicationDirectory + "www/icon.png";
+
+// Converti in URL compatibile
+if (!coverPath.startsWith("file://")) {
+    coverPath = "file://" + coverPath;
+}
+MusicControls.create({
+    track: "TEST TITLE IOS",
+    artist: "TEST ARTIST IOS",
+    cover: coverPath, // local asset
+    // for URL cover: 'https://intergalactic.fm/themes/custom/ifm/logo.svg',
+    isPlaying: true
+});
+*/
+
+function changeLockScreenPreviewImage(title, cover) {
+
 }
 
 function reset() {
@@ -224,7 +273,7 @@ function reset() {
     clearTimeout(nowPlayingRequestTimer);
     selectedChannel = EMPTY_VAL;
     previousTrackTitle = EMPTY_VAL;
-    document.title = PAGE_TITLE;
+    document.title = PAGE_TITLE_DEFAULT;
 }
 
 function feedHTML(elementId, value) {
