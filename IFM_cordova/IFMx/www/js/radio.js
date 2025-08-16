@@ -1,11 +1,8 @@
-// Cache references to DOM elements.
-var elms = ['title0', 'title1', 'title2'];
 var currentNowPlayingUrl;
 var nowPlayingRequestTimer;
 var selectedChannel;
 // where all streaming url and radio info are fetched from
-const STATIONS_JSON_URL = 'https://intergalactic.fm/sd/stations.json';
-const NOW_PLAYING_REQUEST_TIMEOUT_MSEC = 4000;
+const NOW_PLAYING_REQUEST_TIMEOUT_MSEC = 5000;
 const NOW_PLAYING_REQUEST_PREFIX = 'https://www.intergalactic.fm/now-playing?channel=';
 const NOW_PLAYING_PICTURE_REQUEST_PREFIX = 'https://www.intergalactic.fm/channel-content/';
 const NOW_PLAYING_DIV_ID = 'nowPlaying';
@@ -19,49 +16,45 @@ const VJS_PLAY_CONTROL_CLASS = 'vjs-play-control';
 const VJS_PLAYING_CLASS = 'vjs-playing';
 const PAGE_TITLE_DEFAULT = 'Intergalactic FM';
 
-elms.forEach(function (elm) {
-    window[elm] = document.getElementById(elm);
-});
-
-
 /**
  * Radio class containing the state of our stations.
  * Includes all methods for playing, stopping, etc.
  * @param {Array} stations Array of objects with station details ({title, src, howl, ...}).
  */
-var Radio = function (stations) {
 
-    var self = this;
+const CBS_BUTTON_ID = 'cbsChannelButton';
+const DF_BUTTON_ID = 'dfChannelButton';
+const TDM_BUTTON_ID = 'tdmChannelButton';
+const STATIONS_BUTTON_ID_LIST = [CBS_BUTTON_ID, DF_BUTTON_ID, TDM_BUTTON_ID];
+const STOP_BUTTON_ID = 'stopButton';
 
-    if (!radio) {
-        fetchStations();
+
+// stop button
+document.getElementById(STOP_BUTTON_ID).addEventListener("click", function () {
+    reset();
+    if (radio) {
+        radio.stop();
     }
+});
+
+var Radio = function (stations) {
+    var self = this;
 
     self.stations = stations;
     self.index = 0;
 
     // Setup the display for each station.
     for (var i = 0; i < self.stations.length; i++) {
-        window['title' + i].innerHTML = self.stations[i].title;
-        window['title' + i].addEventListener('click', function (index) {
+        document.getElementById(STATIONS_BUTTON_ID_LIST[i]).addEventListener('click', function (index) {
             var isNotPlaying = (self.stations[index].howl && !self.stations[index].howl.playing());
-
             // Stop other sounds or the current one.
             radio.stop();
-
             // If the station isn't already playing or it doesn't exist, play it.
             if (isNotPlaying || !self.stations[index].howl) {
                 radio.play(index);
             }
         }.bind(self, i));
     }
-
-    // stop button
-    window['stopButton'].addEventListener("click", function () {
-        if (radio) {
-            radio.stop()
-        }
-    });
 };
 
 Radio.prototype = {
@@ -97,6 +90,7 @@ Radio.prototype = {
         selectedChannel = index + 1;
         currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + self.stations[index].title;
         getNowPlaying();
+
     },
 
     /**
@@ -116,37 +110,6 @@ Radio.prototype = {
     }
 };
 
-// Radio object, empty, to be filled with fetchStations()
-var radio = new Radio([]);
-
-/* requests stations info and stream url from IFM server STATIONS_JSON_URL */
-async function fetchStations() {
-    const response = await fetch(STATIONS_JSON_URL);
-    const stationsJson = await response.json();
-    //console.log("STATIONS");
-    var cbsInfo = stationsJson.stations[0];
-    var dfInfo = stationsJson.stations[1];
-    var tdmInfo = stationsJson.stations[2];
-    radio = new Radio([
-        {
-            title: cbsInfo.name,
-            src: cbsInfo.url,
-            howl: null
-                },
-        {
-            title: dfInfo.name,
-            src: dfInfo.url,
-            howl: null
-                },
-        {
-            title: tdmInfo.name,
-            src: tdmInfo.url,
-            howl: null
-                    }
-                ]);
-}
-
-
 // request now playing from IFM server every NOW_PLAYING_REQUEST_TIMEOUT_MSEC
 var previousTrackTitle = EMPTY_VAL;
 async function getNowPlaying() {
@@ -163,11 +126,12 @@ async function getNowPlaying() {
                 previousTrackTitle = newTrack;
             }
         }
+        nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
     } catch (error) {
         console.log(error);
+        displayMessage(error);
         reset();
     }
-    nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
 }
 
 function setTrackMetadata(trackMetadata) {
@@ -190,7 +154,6 @@ function setTrackMetadata(trackMetadata) {
             }
         ]
         });
-
     }
 
 }
@@ -226,8 +189,6 @@ function feedNowPlaying(title) {
             modal.style.display = "none";
         }
 
-    } else {
-        reset();
     }
 }
 
@@ -274,6 +235,8 @@ function reset() {
     selectedChannel = EMPTY_VAL;
     previousTrackTitle = EMPTY_VAL;
     document.title = PAGE_TITLE_DEFAULT;
+    var modal = document.getElementById("trackInfoModal");
+    modal.style.display = "none";
 }
 
 function feedHTML(elementId, value) {

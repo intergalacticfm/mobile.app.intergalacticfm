@@ -3,6 +3,14 @@
     src: url('Michroma-Regular.ttf');
 }
 
+html,
+body {
+    background-color: black;
+    color: white;
+    font-family: Michroma-Regular;
+    font-size: 1em;
+}
+
 h1 {
     display: flex;
     justify-content: center;
@@ -14,55 +22,79 @@ h2 {
     font-size: 1em;
 }
 
-h5 {
-    display: table;
-    margin: 0 auto;
-}
-
 .container {
-    display: table;
-    margin: 0 auto;
-    border: 1px solid black;
-    height: 100%;
+    box-sizing: border-box;
+    position: relative;
+    text-align: center;
 }
 
-body {
-    color: white;
+div {
+    max-width: 100%;
+}
+
+img {
+    width: 100%;
+    object-fit: contain;
+}
+
+
+.header {
     background-color: black;
-    font-family: Michroma-Regular;
-    font-size: 1em;
+    max-height: 15%;
+}
+
+#headerImage {
+    max-height: 9em;
+    object-fit: contain;
+}
+
+.channels {
+    margin: 2em;
+    max-height: 33%;
 }
 
 .channel {
-    border-radius: 4px;
+    display: table-cell;
+    vertical-align: middle;
+    text-align: left;
+    width: 100%;
+    max-height: 4em;
+    font-size: 0.6em;
+    color: white;
     background-color: black;
+    border-radius: 0.4em;
     font-family: Michroma-Regular;
 }
 
-#title0 {
-    color: white;
-    border-color: red;
+.channelIcon {
+    max-height: 3em;
+    max-width: 3em;
 }
 
-#title1 {
-    color: white;
+.channelTable {
+    text-align: center;
+}
+
+#cbsChannelButton {
+    border-color: white;
+}
+
+#dfChannelButton {
     border-color: yellow;
 }
 
-#title2 {
-    color: white;
+#tdmChannelButton {
     border-color: cornflowerblue;
 }
 
-table {
-    display: table;
-    margin: 0 auto;
-    width: 50%;
-    height: 80%;
-    border: 0px solid;
-    text-align: left;
+#mtvChannelButton {
+    border-color: red;
 }
 
+#messageBox {
+    margin: 1em;
+    height: 5em;
+}
 
 /* The Modal (background) */
 .modal {
