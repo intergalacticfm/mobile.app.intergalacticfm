@@ -58,27 +58,34 @@ Radio.prototype = {
      * @param  {Number} index Index in the array of stations.
      */
     play: function (index) {
-        var self = this;
-        var sound;
+        try {
+            var self = this;
+            var sound;
 
-        index = typeof index === 'number' ? index : self.index;
-        var data = self.stations[index];
+            index = typeof index === 'number' ? index : self.index;
+            var data = self.stations[index];
 
-        // If we already loaded this track, use the current one.
-        // Otherwise, setup and load a new Howl.
-        if (data.howl) {
-            sound = data.howl;
-        } else {
-            sound = data.howl = new Howl({
-                src: data.src,
-                html5: true, // A live stream can only be played through HTML5 Audio.
-                format: ['mp3', 'aac'],
-                volume: 1
-            });
+            // If we already loaded this track, use the current one.
+            // Otherwise, setup and load a new Howl.
+            if (data.howl) {
+                sound = data.howl;
+            } else {
+                sound = data.howl = new Howl({
+                    src: data.src,
+                    html5: true, // A live stream can only be played through HTML5 Audio.
+                    format: ['mp3', 'aac'],
+                    volume: 1
+                });
+            }
+
+            // Begin playing the sound.
+            sound.play();
+        } catch (error) {
+            console.log(error);
+            displayMessage(error);
+            reset();
         }
 
-        // Begin playing the sound.
-        sound.play();
 
         // Keep track of the index we are currently playing.
         self.index = index;
@@ -133,7 +140,6 @@ async function getNowPlaying() {
         }
         nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
     } catch (error) {
-        console.log(error);
         displayMessage(error);
         reset();
     }
@@ -151,58 +157,60 @@ var nowPlayingMetadatas = {
 
 function setTrackMetadata(trackMetadata) {
     // example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
-    // TODO: create an object with these attrs so can be shared by other functions (i.e lockscreen controls)
-    const trackMetadatas = trackMetadata.title.split('|');
-    var artist_title = trackMetadatas[0];
+    if (trackMetadata) {
+        const trackMetadatas = trackMetadata.title.split('|');
+        var artist_title = trackMetadatas[0];
 
-    var artist = artist_title.split(' - ')[0].trim();
-    var title = artist_title.split(' - ')[1].trim();
-    var album = trackMetadatas[1] ? trackMetadatas[1].trim() : EMPTY_VAL;
-    var label = trackMetadatas[2] ? trackMetadatas[2].trim() : EMPTY_VAL;
-    var year = trackMetadatas[3] ? trackMetadatas[3].trim() : EMPTY_VAL;
-    var country = trackMetadatas[4] ? trackMetadatas[4].trim() : EMPTY_VAL;
-    var ifmxLog = trackMetadatas[5] ? trackMetadatas[5].trim() : DEFAULT_SCROLLING_TEXT;
+        var artist = artist_title.split(' - ')[0].trim();
+        var title = artist_title.split(' - ')[1].trim();
+        var album = trackMetadatas[1] ? trackMetadatas[1].trim() : EMPTY_VAL;
+        var label = trackMetadatas[2] ? trackMetadatas[2].trim() : EMPTY_VAL;
+        var year = trackMetadatas[3] ? trackMetadatas[3].trim() : EMPTY_VAL;
+        var country = trackMetadatas[4] ? trackMetadatas[4].trim() : EMPTY_VAL;
+        var ifmxLog = trackMetadatas[5] ? trackMetadatas[5].trim() : DEFAULT_SCROLLING_TEXT;
 
-    nowPlayingMetadatas.artist = artist;
-    nowPlayingMetadatas.title = title;
-    nowPlayingMetadatas.album = album;
-    nowPlayingMetadatas.label = label;
-    nowPlayingMetadatas.year = year;
-    nowPlayingMetadatas.country = country;
+        nowPlayingMetadatas.artist = artist;
+        nowPlayingMetadatas.title = title;
+        nowPlayingMetadatas.album = album;
+        nowPlayingMetadatas.label = label;
+        nowPlayingMetadatas.year = year;
+        nowPlayingMetadatas.country = country;
 
-    setScrollingText(ifmxLog);
-    var coverPath = "img/favicon.ico";
+        setScrollingText(ifmxLog);
+        var coverPath = "img/favicon.ico";
 
-    if ("mediaSession" in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: title,
-            artist: artist,
-            album: album,
-            artwork: [{
-                src: coverPath
+        if ("mediaSession" in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: title,
+                artist: artist,
+                album: album,
+                artwork: [{
+                    src: coverPath
                 }]
-        });
-        navigator.mediaSession.setActionHandler("play", () => {
-            caudio.play();
-            navigator.mediaSession.playbackState = "playing";
-        });
+            });
+            navigator.mediaSession.setActionHandler("play", () => {
+                caudio.play();
+                navigator.mediaSession.playbackState = "playing";
+            });
 
-        navigator.mediaSession.setActionHandler("pause", () => {
-            caudio.pause();
-            navigator.mediaSession.playbackState = "paused";
-        });
-        navigator.mediaSession.setActionHandler('previoustrack', () => {
-            console.log('Previous track');
-            // Logic to change to previous track goes here
-            previousTrack();
-        });
+            navigator.mediaSession.setActionHandler("pause", () => {
+                caudio.pause();
+                navigator.mediaSession.playbackState = "paused";
+            });
+            navigator.mediaSession.setActionHandler('previoustrack', () => {
+                console.log('Previous track');
+                // Logic to change to previous track goes here
+                previousTrack();
+            });
 
-        navigator.mediaSession.setActionHandler('nexttrack', () => {
-            console.log('Next track');
-            // Logic to change to next track goes here
-            nextTrack();
-        });
+            navigator.mediaSession.setActionHandler('nexttrack', () => {
+                console.log('Next track');
+                // Logic to change to next track goes here
+                nextTrack();
+            });
+        }
     }
+
 
 }
 
