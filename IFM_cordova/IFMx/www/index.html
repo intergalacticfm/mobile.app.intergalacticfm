@@ -4,17 +4,17 @@
 <head>
     <title>Intergalactic FM</title>
     <link rel="stylesheet" type="text/css" href="css/index.css">
-    <link rel="icon" type="image/x-icon" href="https://intergalactic.fm/themes/custom/ifm/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <!-- Header -->
-            <h1><img src="img/logo.svg" alt="IFM logo" style="max-height: 2em"></h1>
-        </div>
+    <div class="header">
+        <!-- Header -->
+        <h1><img src="img/logo.svg" alt="IFM logo" style="max-height: 2em"></h1>
+    </div>
+    <div id="container" class="container">
         <!-- Channel list -->
         <div class="channels">
             <button id="cbsChannelButton" class="channel">
@@ -24,7 +24,7 @@
                             <img class="channelIcon" src="img/cbs.png" />
                         </td>
                         <td>
-                            Cybernetic Broadcasting System
+                            CYBERNETIC BROADCASTING SYSTEM
                         </td>
                     </tr>
                 </table>
@@ -37,7 +37,7 @@
                             <img class="channelIcon" src="img/df.png" />
                         </td>
                         <td>
-                            Disco Fetish
+                            DISCO FETISH
                         </td>
                     </tr>
                 </table>
@@ -50,11 +50,12 @@
                             <img class="channelIcon" src="img/tdm.png" />
                         </td>
                         <td>
-                            The Dream Machine
+                            THE DREAM MACHINE
                         </td>
                     </tr>
                 </table>
             </button>
+            <!-- 
             <p></p>
             <button id="mtvChannelButton" class="channel">
                 <table>
@@ -68,31 +69,66 @@
                     </tr>
                 </table>
             </button>
+            -->
         </div>
 
         <div id="messageBox">
         </div>
 
-        <div id="links">
-            <button id="websiteRedirect">GO TO WEBSITE</button>
-            <button id="donateRedirect">DONATE TO IFM</button>
+        <div class="links">
+            <button id="websiteRedirect" class="channel">
+                <table>
+                    <tr>
+                        <td>
+                            @
+                        </td>
+                        <td>
+                            WEBSITE
+                        </td>
+                    </tr>
+                </table>
+            </button>
+            <button id="donateRedirect" class="channel">
+                <table>
+                    <tr>
+                        <td>
+                            $
+                        </td>
+                        <td>
+                            DONATE
+                        </td>
+                    </tr>
+                </table>
+            </button>
+            <button id="archiveRedirect" class="channel">
+                <table>
+                    <tr>
+                        <td>
+                            [-]
+                        </td>
+                        <td>
+                            ARCHIVE
+                        </td>
+                    </tr>
+                </table>
+            </button>
         </div>
-
-        <!-- Now Playing -->
-        <div id="trackInfoModal" class="modal">
-            <button id="stopButton" class="close">x</button>
-            <div id="track-meta">
-                <h5 id="nowPlaying"> </h5>
-            </div>
-            <br>
-            <div id="nowPlayingCover"></div>
-            <h6 id="nowPlayingExt"></h6>
-
+    </div>
+    <!-- Now Playing -->
+    <div id="trackInfoModal" class="modal">
+        <button id="stopButton" class="close">X</button>
+        <div id="track-meta">
+            <h5 id="nowPlaying"> </h5>
         </div>
+        <div id="nowPlayingCover"></div>
+        <h6 id="nowPlayingExt"></h6>
     </div>
     <script src="js/howler.core.js"></script>
     <script src="js/index.js"></script>
     <script src="js/radio.js"></script>
+    <!-- 
+    <script src="js/lockscreen.js"></script>
+    -->
 </body>
 
 </html>

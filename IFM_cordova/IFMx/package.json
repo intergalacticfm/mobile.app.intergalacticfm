@@ -26,7 +26,8 @@
       "cordova-plugin-media": {
         "KEEP_AVAUDIOSESSION_ALWAYS_ACTIVE": "NO"
       },
-      "cordova-plugin-music-controls2": {}
+      "cordova-plugin-music-controls2": {},
+      "cordova-plugin-file": {}
     }
   }
 }

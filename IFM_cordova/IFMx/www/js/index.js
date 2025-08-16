@@ -3,6 +3,7 @@ const STATIONS_JSON_URL = 'https://intergalactic.fm/sd/stations.json';
 const DISPLAY_MESSAGE_BOX_ID = 'messageBox';
 const DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=MV4HVU2D4W3LJ';
 const WEBSITE_URL = 'https://intergalactic.fm/';
+const ARCHIVE_URL = 'https://videohotmix.net/';
 
 
 window.onload = function () {
@@ -18,6 +19,11 @@ document.getElementById("donateRedirect").addEventListener("click",
 document.getElementById("websiteRedirect").addEventListener("click",
     function () {
         window.location.href = WEBSITE_URL;
+    });
+
+document.getElementById("archiveRedirect").addEventListener("click",
+    function () {
+        window.location.href = ARCHIVE_URL;
     });
 
 /* requests stations info and stream url from IFM server STATIONS_JSON_URL */
