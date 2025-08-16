@@ -16,13 +16,13 @@ h1 {
     display: flex;
     justify-content: center;
     margin: 1%;
-    ;
 }
 
 h2 {
     display: flex;
     justify-content: center;
     font-size: 1em;
+    margin: 10%;
 }
 
 .container {
@@ -50,6 +50,34 @@ img {
 #headerImage {
     max-height: 9em;
     object-fit: contain;
+}
+
+/* scrolling text */
+.scrollTextContainer {
+    position: relative;
+    overflow: hidden;
+    margin: 1em auto;
+    /* margini a sinistra e destra */
+    background: black;
+    color: red;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ifmxScrollText {
+    display: inline-block;
+    white-space: nowrap;
+    animation: scroll 10s linear infinite;
+}
+
+@keyframes scroll {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
 }
 
 .channels {
@@ -131,6 +159,8 @@ img {
     background-color: black;
     border: 1px solid #888;
     width: 100%;
+    font-size: 1em;
+    text-align: center;
 }
 
 /* The Close Button */
@@ -154,7 +184,7 @@ img {
 #track-meta {
     margin-left: 10%;
     margin-right: 10%;
-    text-align: left;
+    text-align: center;
 }
 
 #nowPlayingCover {

@@ -4,10 +4,12 @@ const DISPLAY_MESSAGE_BOX_ID = 'messageBox';
 const DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=MV4HVU2D4W3LJ';
 const WEBSITE_URL = 'https://intergalactic.fm/';
 const ARCHIVE_URL = 'https://videohotmix.net/';
+const DEFAULT_SCROLLING_TEXT = 'INTERGALACTIC FM MOBILE APP'
 
 
 window.onload = function () {
     fetchStations();
+    setScrollingText(DEFAULT_SCROLLING_TEXT);
 };
 
 // page links actions
@@ -64,6 +66,10 @@ async function fetchStations() {
 
     // playlist loaded successfuly
     displayMessage("System ready.<br> Select a channel to play.");
+}
+
+function setScrollingText(textForScrolling) {
+    document.getElementsByClassName("ifmxScrollText")[0].innerHTML = textForScrolling;
 }
 
 function displayMessage(message) {

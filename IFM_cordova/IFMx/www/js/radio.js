@@ -124,10 +124,10 @@ async function getNowPlaying() {
 
         if (trackMetadata) {
             if (previousTrackTitle != trackMetadata.title) {
+                console.log("NEW TRACK!");
                 var newTrack = trackMetadata.title;
-                // new track
-                feedNowPlaying(newTrack);
                 previousTrackTitle = newTrack;
+                feedNowPlaying(newTrack);
                 //lockscreenControls();
             }
         }
@@ -139,18 +139,38 @@ async function getNowPlaying() {
     }
 }
 
+var nowPlayingMetadatas = {
+    "artist": "",
+    "title": "",
+    "album": "",
+    "label": "",
+    "year": "",
+    "country": "",
+    "ifmxLog": ""
+}
+
 function setTrackMetadata(trackMetadata) {
     // example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
     // TODO: create an object with these attrs so can be shared by other functions (i.e lockscreen controls)
     const trackMetadatas = trackMetadata.title.split('|');
     var artist_title = trackMetadatas[0];
+
     var artist = artist_title.split(' - ')[0].trim();
     var title = artist_title.split(' - ')[1].trim();
-    var album = trackMetadatas[1].trim();
-    var label = trackMetadatas[2].trim();
-    var year = trackMetadatas[3].trim();
-    var country = trackMetadatas[4].trim();
-    var ifmxLog = trackMetadatas[5].trim(); // TO BE USED AT THE TOP
+    var album = trackMetadatas[1] ? trackMetadatas[1].trim() : EMPTY_VAL;
+    var label = trackMetadatas[2] ? trackMetadatas[2].trim() : EMPTY_VAL;
+    var year = trackMetadatas[3] ? trackMetadatas[3].trim() : EMPTY_VAL;
+    var country = trackMetadatas[4] ? trackMetadatas[4].trim() : EMPTY_VAL;
+    var ifmxLog = trackMetadatas[5] ? trackMetadatas[5].trim() : DEFAULT_SCROLLING_TEXT;
+
+    nowPlayingMetadatas.artist = artist;
+    nowPlayingMetadatas.title = title;
+    nowPlayingMetadatas.album = album;
+    nowPlayingMetadatas.label = label;
+    nowPlayingMetadatas.year = year;
+    nowPlayingMetadatas.country = country;
+
+    setScrollingText(ifmxLog);
     var coverPath = "img/favicon.ico";
 
     if ("mediaSession" in navigator) {
@@ -188,41 +208,30 @@ function setTrackMetadata(trackMetadata) {
 
 // populate the now playing html
 function feedNowPlaying(title) {
-    if (title) {
-        var fields = title.split(META_TAGS_SPLIT_CHAR);
-        var main = fields[0];
-        var otherInfo = fields.slice(1);
-        var otherFieldsProcessed = EMPTY_VAL;
-        for (var i = 0; i < otherInfo.length; i++) {
-            field = otherInfo[i];
-            if (field && field.trim() !== EMPTY_VAL) {
-                otherFieldsProcessed += otherInfo[i] + LINE_BREAK;
-            }
-        }
-        feedHTML(NOW_PLAYING_DIV_ID, main);
-        feedHTML(NOW_PLAYING_DIV_EXT_ID, otherFieldsProcessed);
-        extractCoverFromChannelContent(title);
+    extractCoverFromChannelContent();
+    var fields = title.split(META_TAGS_SPLIT_CHAR);
+    var main = nowPlayingMetadatas.artist + LINE_BREAK + nowPlayingMetadatas.title;
+    var otherInfo = nowPlayingMetadatas.album + LINE_BREAK + nowPlayingMetadatas.year + LINE_BREAK + nowPlayingMetadatas.country;
+
+    feedHTML(NOW_PLAYING_DIV_ID, main);
+    feedHTML(NOW_PLAYING_DIV_EXT_ID, otherInfo);
 
 
-        var modal = document.getElementById("trackInfoModal");
-        var homeContainer = document.getElementById('container');
-
-        // Get the button that opens the modal
-        var btn = document.getElementById("myBtn");
-
-        // Get the <span> element that closes the modal
-        var span = document.getElementsByClassName("close")[0];
-
-        // When the user clicks the button, open the modal 
-        hideElement(homeContainer);
-        showElement(modal);
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function () {
-            hideElement(modal);
-            showElement(homeContainer);
-        }
-
+    var modal = document.getElementById("trackInfoModal");
+    var homeContainer = document.getElementById('container');
+    // Get the button that opens the modal
+    var btn = document.getElementById("myBtn");
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+    // When the user clicks the button, open the modal 
+    hideElement(homeContainer);
+    showElement(modal);
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function () {
+        hideElement(modal);
+        showElement(homeContainer);
     }
+
 }
 
 function showElement(element) {
@@ -233,9 +242,19 @@ function hideElement(element) {
     element.style.display = "none";
 }
 
+var previousResponse = EMPTY_VAL;
 /* cover and track info are fetched from intergalactic.fm, but need parsing */
-async function extractCoverFromChannelContent(title) {
+async function extractCoverFromChannelContent() {
     var response = await fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + selectedChannel);
+    var whileGuard = 0;
+    while (response == previousResponse && whileGuard < 20) {
+        /* main website updates the cover with some delay, so we might request it multiple times before getting the updated one */
+        setTimeout(function () {
+            response = fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + selectedChannel);
+        }, 2000);
+        whileGuard++;
+    }
+    previousResponse = response;
     var body = await response.text();
     var startOfCoverImgIndex = body.indexOf('<img');
     var endOfCoverImgIndex = body.indexOf('alt=""/>') + 10;
@@ -243,7 +262,6 @@ async function extractCoverFromChannelContent(title) {
     // clean IFM inherited website styling
     var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="90%"').replace('height="100"', 'height="90%"');
     feedHTML(NOW_PLAYING_COVER_DIV_ID, extractedCleanCoverHTML);
-    changeLockScreenPreviewImage(title, extractedCleanCoverHTML);
 }
 
 /* lock screen metadata */
@@ -264,10 +282,6 @@ MusicControls.create({
 });
 */
 
-function changeLockScreenPreviewImage(title, cover) {
-
-}
-
 function reset() {
     feedHTML(NOW_PLAYING_DIV_ID, EMPTY_VAL);
     feedHTML(NOW_PLAYING_DIV_EXT_ID, EMPTY_VAL);
@@ -276,8 +290,12 @@ function reset() {
     selectedChannel = EMPTY_VAL;
     previousTrackTitle = EMPTY_VAL;
     document.title = PAGE_TITLE_DEFAULT;
+
     var modal = document.getElementById("trackInfoModal");
-    modal.style.display = "none";
+    var homeContainer = document.getElementById('container');
+    hideElement(modal);
+    showElement(homeContainer);
+    setScrollingText(DEFAULT_SCROLLING_TEXT);
 }
 
 function feedHTML(elementId, value) {
