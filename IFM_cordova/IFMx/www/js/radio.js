@@ -272,7 +272,7 @@ async function extractCoverFromChannelContent() {
 function setLockScreenControls(index) {
     if (index == 0) {
         navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
+        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index + 1]).click();
         });
     } else
@@ -280,18 +280,18 @@ function setLockScreenControls(index) {
         navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index - 1]).click();
         });
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
+        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index + 1]).click();
         });
     } else
     if (index == 2) {
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
         navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index - 1]).click();
         });
     } else {
         navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
     }
 }
 
