@@ -169,11 +169,12 @@ async function getNowPlaying() {
 function setTrackMetadata(trackMetadata) {
     // example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
     if (trackMetadata) {
+
         const trackMetadatas = trackMetadata.title.split(METADATA_SPLIT_CHAR);
+
         var notCorrupted = trackMetadatas[0].includes(ARTIST_TITLE_SPLIT_STRING);
-        var manydash = (trackMetadatas[0].match(/-/g) || []).length > 1;
-        console.log("notCorrupted? " + notCorrupted);
-        console.log("manydash? " + manydash);
+        var manydash = (trackMetadatas[0].match(/-/g) || []).length != 1;
+
 
         var artist_title = trackMetadatas[0];
         var artist = artist_title;
