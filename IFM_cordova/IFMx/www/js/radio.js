@@ -42,13 +42,12 @@ var nowPlayingMetadatas = {
 }
 
 
-
 // stop button
 document.getElementById(STOP_BUTTON_ID).addEventListener("click", function () {
-    reset();
     if (radio) {
         radio.stop();
     }
+    reset();
 });
 
 /**
@@ -57,22 +56,22 @@ document.getElementById(STOP_BUTTON_ID).addEventListener("click", function () {
  * @param {Array} stations Array of objects with station details ({title, src, howl, ...}).
  */
 
-
 var Radio = function (stations) {
     var self = this;
     self.stations = stations;
     self.index = 0;
 
     // Setup the onClick for each channel.
-    for (var i = 0; i < self.stations.length; i++) {
+    for (var i = 0; i < STATIONS_BUTTON_ID_LIST.length; i++) {
         document.getElementById(STATIONS_BUTTON_ID_LIST[i]).addEventListener('click', function (index) {
             var isNotPlaying = (self.stations[index].howl && !self.stations[index].howl.playing());
-            // Stop other sounds or the current one.
-            radio.stop();
             // If the channel isn't already playing or it doesn't exist, play it.
             if (isNotPlaying || !self.stations[index].howl) {
                 radio.play(index);
+            } else {
+                radio.stop();
             }
+            setLockScreenControls(index);
         }.bind(self, i));
     }
 };
@@ -84,42 +83,35 @@ Radio.prototype = {
      */
     play: function (index) {
         try {
+
             var self = this;
             var sound;
 
             index = typeof index === 'number' ? index : self.index;
             var data = self.stations[index];
 
-            // If we already loaded this track, use the current one.
-            // Otherwise, setup and load a new Howl.
-            if (data.howl) {
-                sound = data.howl;
-            } else {
-                sound = data.howl = new Howl({
-                    src: data.src,
-                    html5: true, // A live stream can only be played through HTML5 Audio.
-                    format: ['mp3', 'aac'],
-                    volume: 1
-                });
-            }
+            sound = data.howl = new Howl({
+                src: data.src,
+                html5: true, // A live stream can only be played through HTML5 Audio.
+                format: ['mp3', 'aac'],
+                volume: 1
+            });
+
 
             // Begin playing the sound.
             sound.play();
-            setLockScreenControls(index);
+
+            // Keep track of the index we are currently playing.
+            self.index = index;
+            selectedChannel = index + 1;
+            currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + self.stations[index].title;
+            getNowPlaying();
 
         } catch (error) {
             console.log(error);
             displayMessage(error);
             reset();
         }
-
-
-        // Keep track of the index we are currently playing.
-        self.index = index;
-        selectedChannel = index + 1;
-        currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + self.stations[index].title;
-        getNowPlaying();
-
     },
 
     /**
@@ -132,18 +124,10 @@ Radio.prototype = {
         // Stop the sound.
         if (sound) {
             sound.unload();
+            sound.stop();
+            reset();
         }
-        reset();
-    },
-
-    changeVolume: function (volumeAmount) {
-        var self = this;
-        var sound = self.stations[self.index].howl;
-        if (sound) {
-            sound.volume(volumeAmount);
-        }
-    },
-
+    }
 };
 
 // request now playing from IFM server every NOW_PLAYING_REQUEST_TIMEOUT_MSEC
@@ -151,9 +135,10 @@ async function getNowPlaying() {
     try {
         const response = await fetch(currentNowPlayingUrl);
         const trackMetadata = await response.json();
-        setTrackMetadata(trackMetadata);
+
         if (trackMetadata) {
             if (previousTrackTitle != trackMetadata.title) {
+                setTrackMetadata(trackMetadata);
                 var newTrack = trackMetadata.title;
                 previousTrackTitle = newTrack;
                 feedNowPlaying(newTrack);
@@ -169,13 +154,9 @@ async function getNowPlaying() {
 function setTrackMetadata(trackMetadata) {
     // example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
     if (trackMetadata) {
-
         const trackMetadatas = trackMetadata.title.split(METADATA_SPLIT_CHAR);
-
         var notCorrupted = trackMetadatas[0].includes(ARTIST_TITLE_SPLIT_STRING);
         var manydash = (trackMetadatas[0].match(/-/g) || []).length != 1;
-
-
         var artist_title = trackMetadatas[0];
         var artist = artist_title;
         var title = "";
@@ -211,8 +192,6 @@ function setTrackMetadata(trackMetadata) {
             });
         }
     }
-
-
 }
 
 // populate the now playing html
@@ -227,7 +206,6 @@ function feedNowPlaying(title) {
     feedHTML(NOW_PLAYING_DIV_ID, main);
     feedHTML(NOW_PLAYING_DIV_EXT_ID, otherInfo);
     extractCoverFromChannelContent();
-
 
     var modal = document.getElementById("trackInfoModal");
     var homeContainer = document.getElementById('container');
@@ -270,28 +248,34 @@ async function extractCoverFromChannelContent() {
 }
 
 function setLockScreenControls(index) {
+    var nextIndex = index + 1;
+    var previousIndex = index - 1;
     if (index == 0) {
         navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
         navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
-            document.getElementById(STATIONS_BUTTON_ID_LIST[index + 1]).click();
+            document.getElementById(STOP_BUTTON_ID).click();
+            document.getElementById(STATIONS_BUTTON_ID_LIST[nextIndex]).click();
         });
     } else
     if (index == 1) {
         navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
-            document.getElementById(STATIONS_BUTTON_ID_LIST[index - 1]).click();
+            document.getElementById(STOP_BUTTON_ID).click();
+            document.getElementById(STATIONS_BUTTON_ID_LIST[previousIndex]).click();
         });
         navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
-            document.getElementById(STATIONS_BUTTON_ID_LIST[index + 1]).click();
+            document.getElementById(STOP_BUTTON_ID).click();
+            document.getElementById(STATIONS_BUTTON_ID_LIST[nextIndex]).click();
         });
     } else
     if (index == 2) {
         navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
         navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
-            document.getElementById(STATIONS_BUTTON_ID_LIST[index - 1]).click();
+            document.getElementById(STOP_BUTTON_ID).click();
+            document.getElementById(STATIONS_BUTTON_ID_LIST[previousIndex]).click();
         });
     } else {
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
         navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
     }
 }
 
@@ -300,10 +284,9 @@ function reset() {
     feedHTML(NOW_PLAYING_DIV_EXT_ID, EMPTY_VAL);
     feedHTML(NOW_PLAYING_COVER_DIV_ID, EMPTY_VAL);
     clearTimeout(nowPlayingRequestTimer);
-    selectedChannel = EMPTY_VAL;
     previousTrackTitle = EMPTY_VAL;
+    selectedChannel = EMPTY_VAL;
     document.title = PAGE_TITLE_DEFAULT;
-
     var modal = document.getElementById("trackInfoModal");
     var homeContainer = document.getElementById('container');
     hideElement(modal);
