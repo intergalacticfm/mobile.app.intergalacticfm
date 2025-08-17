@@ -4,7 +4,7 @@ const DISPLAY_MESSAGE_BOX_ID = 'messageBox';
 const DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=MV4HVU2D4W3LJ';
 const WEBSITE_URL = 'https://intergalactic.fm/';
 const ARCHIVE_URL = 'https://videohotmix.net/';
-const DEFAULT_SCROLLING_TEXT = 'INTERGALACTIC FM MOBILE APP'
+const DEFAULT_SCROLLING_TEXT = 'INTERGALACTIC FM SPACE TRAVELS APP'
 
 
 window.onload = function () {
