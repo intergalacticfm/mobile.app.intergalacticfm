@@ -1,6 +1,8 @@
 var currentNowPlayingUrl;
 var nowPlayingRequestTimer;
 var selectedChannel;
+var stations;
+
 const NOW_PLAYING_REQUEST_TIMEOUT_MSEC = 4000;
 const NOW_PLAYING_REQUEST_PREFIX = 'https://www.intergalactic.fm/now-playing?channel=';
 const NOW_PLAYING_PICTURE_REQUEST_PREFIX = 'https://www.intergalactic.fm/channel-content/';
@@ -18,6 +20,27 @@ const DF_BUTTON_ID = 'dfChannelButton';
 const TDM_BUTTON_ID = 'tdmChannelButton';
 const STATIONS_BUTTON_ID_LIST = [CBS_BUTTON_ID, DF_BUTTON_ID, TDM_BUTTON_ID];
 const STOP_BUTTON_ID = 'stopButton';
+const COVER_PATH = "img/logo128.png";
+const CBS_COVER_PATH = "img/cbs128.png";
+const DF_COVER_PATH = "img/df128.png";
+const TDM_COVER_PATH = "img/tdm128.png";
+const COVER_PATH_ARRAY = [CBS_COVER_PATH, DF_COVER_PATH, TDM_COVER_PATH];
+const ARTIST_TITLE_SPLIT_STRING = ' - ';
+const METADATA_SPLIT_CHAR = '|';
+const NEXT_TRACK_ACTION_NAME = 'nexttrack';
+const PREVIOUS_TRACK_ACTION_NAME = 'previoustrack';
+var previousTrackTitle = EMPTY_VAL;
+var previousBody = EMPTY_VAL;
+var nowPlayingMetadatas = {
+    "artist": "",
+    "title": "",
+    "album": "",
+    "label": "",
+    "year": "",
+    "country": "",
+    "ifmxLog": ""
+}
+
 
 
 // stop button
@@ -34,7 +57,6 @@ document.getElementById(STOP_BUTTON_ID).addEventListener("click", function () {
  * @param {Array} stations Array of objects with station details ({title, src, howl, ...}).
  */
 
-var stations;
 
 var Radio = function (stations) {
     var self = this;
@@ -125,7 +147,6 @@ Radio.prototype = {
 };
 
 // request now playing from IFM server every NOW_PLAYING_REQUEST_TIMEOUT_MSEC
-var previousTrackTitle = EMPTY_VAL;
 async function getNowPlaying() {
     try {
         const response = await fetch(currentNowPlayingUrl);
@@ -145,30 +166,23 @@ async function getNowPlaying() {
     }
 }
 
-var nowPlayingMetadatas = {
-    "artist": "",
-    "title": "",
-    "album": "",
-    "label": "",
-    "year": "",
-    "country": "",
-    "ifmxLog": ""
-}
-
-const COVER_PATH = "img/logo128.png";
-const CBS_COVER_PATH = "img/cbs128.png";
-const DF_COVER_PATH = "img/df128.png";
-const TDM_COVER_PATH = "img/tdm128.png";
-const COVER_PATH_ARRAY = [CBS_COVER_PATH, DF_COVER_PATH, TDM_COVER_PATH];
-
 function setTrackMetadata(trackMetadata) {
     // example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
     if (trackMetadata) {
-        const trackMetadatas = trackMetadata.title.split('|');
-        var artist_title = trackMetadatas[0];
+        const trackMetadatas = trackMetadata.title.split(METADATA_SPLIT_CHAR);
+        var notCorrupted = trackMetadatas[0].includes(ARTIST_TITLE_SPLIT_STRING);
+        var manydash = (trackMetadatas[0].match(/-/g) || []).length > 1;
+        console.log("notCorrupted? " + notCorrupted);
+        console.log("manydash? " + manydash);
 
-        var artist = artist_title.split(' - ')[0].trim();
-        var title = artist_title.split(' - ')[1].trim();
+        var artist_title = trackMetadatas[0];
+        var artist = artist_title;
+        var title = "";
+        if (notCorrupted && !manydash) {
+            artist = artist_title.split(ARTIST_TITLE_SPLIT_STRING)[0].trim();
+            title = artist_title.split(ARTIST_TITLE_SPLIT_STRING)[1].trim();
+        }
+
         var album = trackMetadatas[1] ? trackMetadatas[1].trim() : EMPTY_VAL;
         var label = trackMetadatas[2] ? trackMetadatas[2].trim() : EMPTY_VAL;
         var year = trackMetadatas[3] ? trackMetadatas[3].trim() : EMPTY_VAL;
@@ -204,9 +218,9 @@ function setTrackMetadata(trackMetadata) {
 function feedNowPlaying(title) {
 
     var fields = title.split(META_TAGS_SPLIT_CHAR);
-    var main = nowPlayingMetadatas.artist + " - " + nowPlayingMetadatas.title;
+    var main = nowPlayingMetadatas.artist + ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.title;
     var otherInfo = (nowPlayingMetadatas.album !== '' ? nowPlayingMetadatas.album : EMPTY_VAL) +
-        (nowPlayingMetadatas.year !== '' ? " - " + nowPlayingMetadatas.year : EMPTY_VAL) +
+        (nowPlayingMetadatas.year !== '' ? ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.year : EMPTY_VAL) +
         (nowPlayingMetadatas.country !== '' ? " , " + nowPlayingMetadatas.country : EMPTY_VAL);
 
     feedHTML(NOW_PLAYING_DIV_ID, main);
@@ -231,15 +245,6 @@ function feedNowPlaying(title) {
 
 }
 
-function showElement(element) {
-    element.style.display = "block";
-}
-
-function hideElement(element) {
-    element.style.display = "none";
-}
-
-var previousBody = EMPTY_VAL;
 /* cover and track info are fetched from intergalactic.fm, but need parsing */
 async function extractCoverFromChannelContent() {
     var response = await fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + selectedChannel);
@@ -265,27 +270,27 @@ async function extractCoverFromChannelContent() {
 
 function setLockScreenControls(index) {
     if (index == 0) {
-        navigator.mediaSession.setActionHandler('previoustrack', null);
-        navigator.mediaSession.setActionHandler('nexttrack', () => {
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index + 1]).click();
         });
     } else
     if (index == 1) {
-        navigator.mediaSession.setActionHandler('previoustrack', () => {
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index - 1]).click();
         });
-        navigator.mediaSession.setActionHandler('nexttrack', () => {
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index + 1]).click();
         });
     } else
     if (index == 2) {
-        navigator.mediaSession.setActionHandler('nexttrack', null);
-        navigator.mediaSession.setActionHandler('previoustrack', () => {
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index - 1]).click();
         });
     } else {
-        navigator.mediaSession.setActionHandler('previoustrack', null);
-        navigator.mediaSession.setActionHandler('nexttrack', null);
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
     }
 }
 

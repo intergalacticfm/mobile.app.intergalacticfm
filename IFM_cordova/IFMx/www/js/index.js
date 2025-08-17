@@ -80,3 +80,11 @@ function displayMessage(message) {
 function feedHTML(elementId, value) {
     document.getElementById(elementId).innerHTML = value;
 }
+
+function showElement(element) {
+    element.style.display = "block";
+}
+
+function hideElement(element) {
+    element.style.display = "none";
+}
