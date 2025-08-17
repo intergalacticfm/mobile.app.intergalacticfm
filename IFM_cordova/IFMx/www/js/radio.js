@@ -129,7 +129,6 @@ async function getNowPlaying() {
         const response = await fetch(currentNowPlayingUrl);
         const trackMetadata = await response.json();
         setTrackMetadata(trackMetadata);
-
         if (trackMetadata) {
             if (previousTrackTitle != trackMetadata.title) {
                 var newTrack = trackMetadata.title;
@@ -191,11 +190,14 @@ function setTrackMetadata(trackMetadata) {
             navigator.mediaSession.setActionHandler("play", () => {
                 caudio.play();
                 navigator.mediaSession.playbackState = "playing";
+                radio.play();
             });
 
             navigator.mediaSession.setActionHandler("pause", () => {
                 caudio.pause();
                 navigator.mediaSession.playbackState = "paused";
+                radio.stop();
+                reset();
             });
             navigator.mediaSession.setActionHandler('previoustrack', () => {
                 console.log('Previous track');
@@ -253,7 +255,7 @@ function hideElement(element) {
     element.style.display = "none";
 }
 
-var previousExtractedCoverHTML = EMPTY_VAL;
+var previousBody = EMPTY_VAL;
 /* cover and track info are fetched from intergalactic.fm, but need parsing */
 async function extractCoverFromChannelContent() {
     var response = await fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + selectedChannel);
@@ -262,14 +264,15 @@ async function extractCoverFromChannelContent() {
     var endOfCoverImgIndex = body.indexOf('alt=""/>') + 10;
     var extractedCoverHTML = body.substring(startOfCoverImgIndex, endOfCoverImgIndex);
     var whileGuard = 0;
-    while (extractedCoverHTML == previousExtractedCoverHTML && whileGuard < 20) {
+    while (body == previousBody && whileGuard < 20) {
         /* main website updates the cover with some delay, so we might request it multiple times before getting the updated one */
         setTimeout(function () {
             response = fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + selectedChannel);
+            body = response.text();
         }, 2000);
         whileGuard++;
     }
-    previousExtractedCoverHTML = extractedCoverHTML;
+    previousBody = body;
 
     // clean IFM inherited website styling
     var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="80%"').replace('height="100"', 'height="80%"');
