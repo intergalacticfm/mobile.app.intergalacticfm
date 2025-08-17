@@ -105,10 +105,8 @@ Radio.prototype = {
      */
     stop: function () {
         var self = this;
-
         // Get the Howl we want to manipulate.
         var sound = self.stations[self.index].howl;
-
         // Stop the sound.
         if (sound) {
             sound.unload();
@@ -157,13 +155,11 @@ var nowPlayingMetadatas = {
     "ifmxLog": ""
 }
 
-function onDeviceReady() {
-
-}
-
-
-
-const COVER_PATH = "img/favicon.ico";
+const COVER_PATH = "img/logo128.png";
+const CBS_COVER_PATH = "img/cbs128.png";
+const DF_COVER_PATH = "img/df128.png";
+const TDM_COVER_PATH = "img/tdm128.png";
+const COVER_PATH_ARRAY = [CBS_COVER_PATH, DF_COVER_PATH, TDM_COVER_PATH];
 
 function setTrackMetadata(trackMetadata) {
     // example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
@@ -187,6 +183,7 @@ function setTrackMetadata(trackMetadata) {
         nowPlayingMetadatas.country = country;
 
         setScrollingText(ifmxLog);
+        var coverPath = COVER_PATH_ARRAY[selectedChannel - 1];
 
         if ("mediaSession" in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
@@ -194,7 +191,7 @@ function setTrackMetadata(trackMetadata) {
                 artist: artist,
                 album: album,
                 artwork: [{
-                    src: COVER_PATH
+                    src: coverPath
                 }]
             });
         }
@@ -272,7 +269,7 @@ function setLockScreenControls(index) {
         navigator.mediaSession.setActionHandler('nexttrack', () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index + 1]).click();
         });
-    }
+    } else
     if (index == 1) {
         navigator.mediaSession.setActionHandler('previoustrack', () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index - 1]).click();
@@ -280,12 +277,15 @@ function setLockScreenControls(index) {
         navigator.mediaSession.setActionHandler('nexttrack', () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index + 1]).click();
         });
-    }
+    } else
     if (index == 2) {
         navigator.mediaSession.setActionHandler('nexttrack', null);
         navigator.mediaSession.setActionHandler('previoustrack', () => {
             document.getElementById(STATIONS_BUTTON_ID_LIST[index - 1]).click();
         });
+    } else {
+        navigator.mediaSession.setActionHandler('previoustrack', null);
+        navigator.mediaSession.setActionHandler('nexttrack', null);
     }
 }
 

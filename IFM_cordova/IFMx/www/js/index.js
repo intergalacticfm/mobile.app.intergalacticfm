@@ -10,7 +10,7 @@ const DEFAULT_SCROLLING_TEXT = 'INTERGALACTIC FM SPACE TRAVELS APP'
 window.onload = function () {
     fetchStations();
     setScrollingText(DEFAULT_SCROLLING_TEXT);
-    document.addEventListener("deviceready", onDeviceReady, false);
+    //document.addEventListener("deviceready", onDeviceReady, false);
 };
 
 // page links actions
