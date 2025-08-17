@@ -9,6 +9,7 @@ const TRACK_META_DIV_ID = 'track-meta';
 const NOW_PLAYING_DIV_EXT_ID = 'nowPlayingExt';
 const NOW_PLAYING_COVER_DIV_ID = 'nowPlayingCover';
 const EMPTY_VAL = '';
+const SPACE = ' ';
 const META_TAGS_SPLIT_CHAR = '|';
 const LINE_BREAK = '<br>';
 const PAGE_TITLE_DEFAULT = 'Intergalactic FM';
@@ -131,7 +132,6 @@ async function getNowPlaying() {
 
         if (trackMetadata) {
             if (previousTrackTitle != trackMetadata.title) {
-                console.log("NEW TRACK!");
                 var newTrack = trackMetadata.title;
                 previousTrackTitle = newTrack;
                 feedNowPlaying(newTrack);
@@ -216,13 +216,16 @@ function setTrackMetadata(trackMetadata) {
 
 // populate the now playing html
 function feedNowPlaying(title) {
-    extractCoverFromChannelContent();
+
     var fields = title.split(META_TAGS_SPLIT_CHAR);
-    var main = nowPlayingMetadatas.artist + LINE_BREAK + nowPlayingMetadatas.title;
-    var otherInfo = nowPlayingMetadatas.album + LINE_BREAK + nowPlayingMetadatas.year + LINE_BREAK + nowPlayingMetadatas.country;
+    var main = nowPlayingMetadatas.artist + " - " + nowPlayingMetadatas.title;
+    var otherInfo = (nowPlayingMetadatas.album !== '' ? nowPlayingMetadatas.album : EMPTY_VAL) +
+        (nowPlayingMetadatas.year !== '' ? " - " + nowPlayingMetadatas.year : EMPTY_VAL) +
+        (nowPlayingMetadatas.country !== '' ? " , " + nowPlayingMetadatas.country : EMPTY_VAL);
 
     feedHTML(NOW_PLAYING_DIV_ID, main);
     feedHTML(NOW_PLAYING_DIV_EXT_ID, otherInfo);
+    extractCoverFromChannelContent();
 
 
     var modal = document.getElementById("trackInfoModal");
@@ -250,25 +253,26 @@ function hideElement(element) {
     element.style.display = "none";
 }
 
-var previousResponse = EMPTY_VAL;
+var previousExtractedCoverHTML = EMPTY_VAL;
 /* cover and track info are fetched from intergalactic.fm, but need parsing */
 async function extractCoverFromChannelContent() {
     var response = await fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + selectedChannel);
+    var body = await response.text();
+    var startOfCoverImgIndex = body.indexOf('<img');
+    var endOfCoverImgIndex = body.indexOf('alt=""/>') + 10;
+    var extractedCoverHTML = body.substring(startOfCoverImgIndex, endOfCoverImgIndex);
     var whileGuard = 0;
-    while (response == previousResponse && whileGuard < 20) {
+    while (extractedCoverHTML == previousExtractedCoverHTML && whileGuard < 20) {
         /* main website updates the cover with some delay, so we might request it multiple times before getting the updated one */
         setTimeout(function () {
             response = fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + selectedChannel);
         }, 2000);
         whileGuard++;
     }
-    previousResponse = response;
-    var body = await response.text();
-    var startOfCoverImgIndex = body.indexOf('<img');
-    var endOfCoverImgIndex = body.indexOf('alt=""/>') + 10;
-    var extractedCoverHTML = body.substring(startOfCoverImgIndex, endOfCoverImgIndex);
+    previousExtractedCoverHTML = extractedCoverHTML;
+
     // clean IFM inherited website styling
-    var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="90%"').replace('height="100"', 'height="90%"');
+    var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="80%"').replace('height="100"', 'height="80%"');
     feedHTML(NOW_PLAYING_COVER_DIV_ID, extractedCleanCoverHTML);
 }
 
