@@ -33,9 +33,11 @@ document.getElementById(STOP_BUTTON_ID).addEventListener("click", function () {
  * Includes all methods for playing, stopping, etc.
  * @param {Array} stations Array of objects with station details ({title, src, howl, ...}).
  */
+
+var stations;
+
 var Radio = function (stations) {
     var self = this;
-
     self.stations = stations;
     self.index = 0;
 
@@ -81,6 +83,8 @@ Radio.prototype = {
 
             // Begin playing the sound.
             sound.play();
+            setLockScreenControls(index);
+
         } catch (error) {
             console.log(error);
             displayMessage(error);
@@ -118,8 +122,8 @@ Radio.prototype = {
         if (sound) {
             sound.volume(volumeAmount);
         }
+    },
 
-    }
 };
 
 // request now playing from IFM server every NOW_PLAYING_REQUEST_TIMEOUT_MSEC
@@ -134,7 +138,6 @@ async function getNowPlaying() {
                 var newTrack = trackMetadata.title;
                 previousTrackTitle = newTrack;
                 feedNowPlaying(newTrack);
-                //lockscreenControls();
             }
         }
         nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
@@ -153,6 +156,14 @@ var nowPlayingMetadatas = {
     "country": "",
     "ifmxLog": ""
 }
+
+function onDeviceReady() {
+
+}
+
+
+
+const COVER_PATH = "img/favicon.ico";
 
 function setTrackMetadata(trackMetadata) {
     // example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
@@ -176,7 +187,6 @@ function setTrackMetadata(trackMetadata) {
         nowPlayingMetadatas.country = country;
 
         setScrollingText(ifmxLog);
-        var coverPath = "img/favicon.ico";
 
         if ("mediaSession" in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
@@ -184,31 +194,8 @@ function setTrackMetadata(trackMetadata) {
                 artist: artist,
                 album: album,
                 artwork: [{
-                    src: coverPath
+                    src: COVER_PATH
                 }]
-            });
-            navigator.mediaSession.setActionHandler("play", () => {
-                caudio.play();
-                navigator.mediaSession.playbackState = "playing";
-                radio.play();
-            });
-
-            navigator.mediaSession.setActionHandler("pause", () => {
-                caudio.pause();
-                navigator.mediaSession.playbackState = "paused";
-                radio.stop();
-                reset();
-            });
-            navigator.mediaSession.setActionHandler('previoustrack', () => {
-                console.log('Previous track');
-                // Logic to change to previous track goes here
-                previousTrack();
-            });
-
-            navigator.mediaSession.setActionHandler('nexttrack', () => {
-                console.log('Next track');
-                // Logic to change to next track goes here
-                nextTrack();
             });
         }
     }
@@ -279,23 +266,28 @@ async function extractCoverFromChannelContent() {
     feedHTML(NOW_PLAYING_COVER_DIV_ID, extractedCleanCoverHTML);
 }
 
-/* lock screen metadata */
-// TODO: PARSE TRACK METADATA AND SET CORRECTLY
-/* iOS code for artwork in lockscreen: iOS prevent the direct link from URL, it can be downloaded and used, but this consumes memory, we don't want this, so better to just use a static icon 
-var coverPath = cordova.file.applicationDirectory + "www/icon.png";
-
-// Converti in URL compatibile
-if (!coverPath.startsWith("file://")) {
-    coverPath = "file://" + coverPath;
+function setLockScreenControls(index) {
+    if (index == 0) {
+        navigator.mediaSession.setActionHandler('previoustrack', null);
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+            document.getElementById(STATIONS_BUTTON_ID_LIST[index + 1]).click();
+        });
+    }
+    if (index == 1) {
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+            document.getElementById(STATIONS_BUTTON_ID_LIST[index - 1]).click();
+        });
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+            document.getElementById(STATIONS_BUTTON_ID_LIST[index + 1]).click();
+        });
+    }
+    if (index == 2) {
+        navigator.mediaSession.setActionHandler('nexttrack', null);
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+            document.getElementById(STATIONS_BUTTON_ID_LIST[index - 1]).click();
+        });
+    }
 }
-MusicControls.create({
-    track: "TEST TITLE IOS",
-    artist: "TEST ARTIST IOS",
-    cover: coverPath, // local asset
-    // for URL cover: 'https://intergalactic.fm/themes/custom/ifm/logo.svg',
-    isPlaying: true
-});
-*/
 
 function reset() {
     feedHTML(NOW_PLAYING_DIV_ID, EMPTY_VAL);
