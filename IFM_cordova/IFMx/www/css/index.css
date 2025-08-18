@@ -42,6 +42,14 @@ img {
     object-fit: contain;
 }
 
+.channel:not(:active) {
+    /* now keep red background for 1s */
+    transition: background-color 1000ms step-end;
+}
+
+.channel:active {
+    background: red;
+}
 
 .header {
     background-color: black;
