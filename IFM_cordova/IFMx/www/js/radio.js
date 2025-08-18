@@ -93,7 +93,10 @@ Radio.prototype = {
                 src: data.src,
                 html5: true, // A live stream can only be played through HTML5 Audio.
                 format: ['mp3', 'aac'],
-                volume: 1
+                volume: 1,
+                onload: function () {
+                    setLockScreenControls(index);
+                }
             });
 
 
@@ -104,9 +107,7 @@ Radio.prototype = {
             self.index = index;
             selectedChannel = index + 1;
             currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + self.stations[index].title;
-            getNowPlaying();
-            // Setup the lockscreen next/previous controls.
-            setLockScreenControls(index);
+            getNowPlaying(selectedChannel);
 
         } catch (error) {
             console.log(error);
@@ -132,7 +133,7 @@ Radio.prototype = {
 };
 
 // request now playing from IFM server every NOW_PLAYING_REQUEST_TIMEOUT_MSEC
-async function getNowPlaying() {
+async function getNowPlaying(channel) {
     try {
         const response = await fetch(currentNowPlayingUrl);
         const trackMetadata = await response.json();
@@ -142,6 +143,7 @@ async function getNowPlaying() {
                 setTrackMetadata(trackMetadata);
                 var newTrack = trackMetadata.title;
                 previousTrackTitle = newTrack;
+                extractCoverFromChannelContent(channel);
                 feedNowPlaying(newTrack);
             }
         }
@@ -206,7 +208,6 @@ function feedNowPlaying(title) {
 
     feedHTML(NOW_PLAYING_DIV_ID, main);
     feedHTML(NOW_PLAYING_DIV_EXT_ID, otherInfo);
-    extractCoverFromChannelContent();
 
     var modal = document.getElementById("trackInfoModal");
     var homeContainer = document.getElementById('container');
@@ -226,8 +227,8 @@ function feedNowPlaying(title) {
 }
 
 /* cover and track info are fetched from intergalactic.fm, but need parsing */
-async function extractCoverFromChannelContent() {
-    var response = await fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + selectedChannel);
+async function extractCoverFromChannelContent(channel) {
+    var response = await fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + channel);
     var body = await response.text();
     var startOfCoverImgIndex = body.indexOf('<img');
     var endOfCoverImgIndex = body.indexOf('alt=""/>') + 10;
@@ -236,49 +237,47 @@ async function extractCoverFromChannelContent() {
     while (body == previousBody && whileGuard < 20) {
         /* main website updates the cover with some delay, so we might request it multiple times before getting the updated one */
         setTimeout(function () {
-            response = fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + selectedChannel);
+            response = fetch(NOW_PLAYING_PICTURE_REQUEST_PREFIX + channel);
             body = response.text();
         }, 2000);
         whileGuard++;
     }
     previousBody = body;
 
-    // clean IFM inherited website styling
-    var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="80%"').replace('height="100"', 'height="80%"');
+    // clean IFM inherited website styling and replace blanco img on error with local one
+    var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('https://www.intergalactic.fm/sites/default/files/covers/blanco.png', 'img/blanco.png').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="80%"').replace('height="100"', 'height="80%"');
     feedHTML(NOW_PLAYING_COVER_DIV_ID, extractedCleanCoverHTML);
 }
 
+
 function setLockScreenControls(index) {
-    navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
-    navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-    var nextIndex = index + 1;
-    var previousIndex = index - 1;
-    if (index == 0) {
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
-            document.getElementById(STOP_BUTTON_ID).click();
-            document.getElementById(STATIONS_BUTTON_ID_LIST[nextIndex]).click();
-        });
-    } else
-    if (index == 1) {
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
-            document.getElementById(STOP_BUTTON_ID).click();
-            document.getElementById(STATIONS_BUTTON_ID_LIST[previousIndex]).click();
-        });
-        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
-            document.getElementById(STOP_BUTTON_ID).click();
-            document.getElementById(STATIONS_BUTTON_ID_LIST[nextIndex]).click();
-        });
-    } else
-    if (index == 2) {
-        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
-            document.getElementById(STOP_BUTTON_ID).click();
-            document.getElementById(STATIONS_BUTTON_ID_LIST[previousIndex]).click();
-        });
-    } else {
-        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+    if ("mediaSession" in navigator) {
+        var nextIndex = index + 1;
+        var previousIndex = index - 1;
+        if (index == 0) {
+            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
+                document.getElementById(STOP_BUTTON_ID).click();
+                document.getElementById(STATIONS_BUTTON_ID_LIST[nextIndex]).click();
+            });
+        } else
+        if (index == 1) {
+            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
+                document.getElementById(STOP_BUTTON_ID).click();
+                document.getElementById(STATIONS_BUTTON_ID_LIST[previousIndex]).click();
+            });
+            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
+                document.getElementById(STOP_BUTTON_ID).click();
+                document.getElementById(STATIONS_BUTTON_ID_LIST[nextIndex]).click();
+            });
+        } else
+        if (index == 2) {
+            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
+            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
+                document.getElementById(STOP_BUTTON_ID).click();
+                document.getElementById(STATIONS_BUTTON_ID_LIST[previousIndex]).click();
+            });
+        }
     }
 }
 
