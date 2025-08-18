@@ -61,8 +61,8 @@ var Radio = function (stations) {
     self.stations = stations;
     self.index = 0;
 
-    // Setup the onClick for each channel.
     for (var i = 0; i < STATIONS_BUTTON_ID_LIST.length; i++) {
+        // Setup the onClick for each channel.
         document.getElementById(STATIONS_BUTTON_ID_LIST[i]).addEventListener('click', function (index) {
             var isNotPlaying = (self.stations[index].howl && !self.stations[index].howl.playing());
             // If the channel isn't already playing or it doesn't exist, play it.
@@ -71,7 +71,6 @@ var Radio = function (stations) {
             } else {
                 radio.stop();
             }
-            setLockScreenControls(index);
         }.bind(self, i));
     }
 };
@@ -106,6 +105,8 @@ Radio.prototype = {
             selectedChannel = index + 1;
             currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + self.stations[index].title;
             getNowPlaying();
+            // Setup the lockscreen next/previous controls.
+            setLockScreenControls(index);
 
         } catch (error) {
             console.log(error);
@@ -248,6 +249,8 @@ async function extractCoverFromChannelContent() {
 }
 
 function setLockScreenControls(index) {
+    navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
+    navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
     var nextIndex = index + 1;
     var previousIndex = index - 1;
     if (index == 0) {
