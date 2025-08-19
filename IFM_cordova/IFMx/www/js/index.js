@@ -6,11 +6,12 @@ const WEBSITE_URL = 'https://intergalactic.fm/';
 const ARCHIVE_URL = 'https://videohotmix.net/';
 const DEFAULT_SCROLLING_TEXT = 'INTERGALACTIC FM SPACE TRAVELS APP'
 
-
 window.onload = function () {
     fetchStations();
+    this.audio = document.getElementById('player');
+    this.audio.load();
+
     setScrollingText(DEFAULT_SCROLLING_TEXT);
-    //document.addEventListener("deviceready", onDeviceReady, false);
 };
 
 // page links actions
@@ -30,7 +31,7 @@ document.getElementById("archiveRedirect").addEventListener("click",
     });
 
 /* requests stations info and stream url from IFM server STATIONS_JSON_URL */
-var radio;
+
 async function fetchStations() {
 
     const response = await fetch(STATIONS_JSON_URL).catch(err => {
@@ -63,7 +64,7 @@ async function fetchStations() {
             howl: null
                     }
                 ];
-    radio = new Radio(stations);
+    feedStations(stations);
 
     // playlist loaded successfuly
     displayMessage("System ready.<br> Select a channel to play.");
