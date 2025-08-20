@@ -233,20 +233,22 @@ function extractCoverFromHTML(body) {
 }
 
 if ("mediaSession" in navigator) {
+    /*
     // play / pause / stop lockscreen commands
     navigator.mediaSession.setActionHandler(PLAY_ACTION_NAME, () => {
-        playChannel(index);
+        playChannel(selectedChannel);
     });
     navigator.mediaSession.setActionHandler(PAUSE_ACTION_NAME, () => {
         stopAudio();
         navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
     });
     navigator.mediaSession.setActionHandler(STOP_ACTION_NAME, () => {
         stopAudio();
         navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
     });
+    */
 }
 
 function setLockScreenControls(index) {
