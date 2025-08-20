@@ -3,7 +3,6 @@ var nowPlayingRequestTimer;
 var selectedChannel;
 var stations;
 
-const audio = document.getElementById('player');
 const NOW_PLAYING_REQUEST_TIMEOUT_MSEC = 4000;
 const NOW_PLAYING_REQUEST_PREFIX = 'https://www.intergalactic.fm/now-playing?channel=';
 const NOW_PLAYING_PICTURE_REQUEST_PREFIX = 'https://www.intergalactic.fm/channel-content/';
@@ -30,6 +29,9 @@ const ARTIST_TITLE_SPLIT_STRING = ' - ';
 const METADATA_SPLIT_CHAR = '|';
 const NEXT_TRACK_ACTION_NAME = 'nexttrack';
 const PREVIOUS_TRACK_ACTION_NAME = 'previoustrack';
+const PLAY_ACTION_NAME = 'play';
+const PAUSE_ACTION_NAME = 'pause';
+const STOP_ACTION_NAME = 'stop';
 const AUDIO_CONTROLS_KEY = 'controls';
 const AUDIO_EVENT_PLAYING_NAME = 'playing';
 const AUDIO_EVENT_PAUSE_NAME = 'pause';
@@ -48,9 +50,7 @@ var nowPlayingMetadatas = {
     "ifmxLog": ""
 }
 
-function feedStations(stations) {
-    this.stations = stations;
-}
+var audio;
 
 // channel button actions
 document.getElementById("cbsChannelButton").addEventListener("click",
@@ -68,49 +68,40 @@ document.getElementById("tdmChannelButton").addEventListener("click",
 
 // stop button
 document.getElementById(STOP_BUTTON_ID).addEventListener("click", function () {
-    stop();
+    stopAudio();
+    reset();
 });
 
-function stop() {
-    try {
-        this.audio.currentTime = 0;
-        this.audio.src = "";
-    } catch (error) {
-        //console.log(e);
+function stopAudio() {
+    if (audio) {
+        try {
+            audio.currentTime = 0;
+            audio.pause();
+        } catch (error) {
+            //console.log(e);
+        }
     }
-    fetchStations();
 }
-
 
 function playChannel(channelNumber) {
     clearTimeout(nowPlayingRequestTimer);
+    if (audio) {
+        audio.pause();
+    }
+    audio = AUDIO_PLAYERS[channelNumber];
+    clearTimeout(nowPlayingRequestTimer);
     this.previousExtractedCoverHTML = EMPTY_VAL;
-    var channelTitle = this.stations[channelNumber].title;
+    var channelTitle = this.fetchedStations[channelNumber].title;
     displayMessage(LOADING_MSG + channelTitle + "...");
-    var channelStreamSource = this.stations[channelNumber].src;
-    this.audio.src = channelStreamSource;
-    this.audio.play();
+
+    audio.play();
+
     this.selectedChannel = channelNumber + 1;
     this.currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + channelTitle;
     setLockScreenControls(channelNumber);
+    getNowPlaying();
 
 }
-
-// when the audio player has finished loading and is ready to play
-audio.addEventListener(AUDIO_EVENT_PLAYING_NAME, function () {
-    //feedHTML(LOADING_DIV_ID, EMPTY_VAL);
-    // audio.controls = AUDIO_CONTROLS_KEY;
-    getNowPlaying();
-});
-
-// when there is an error
-audio.addEventListener(AUDIO_EVENT_ERROR_NAME, function (e) {
-    clearTimeout(nowPlayingRequestTimer);
-    var errorCode = e.currentTarget.error.code;
-    reset();
-    displayMessage(e.currentTarget.error);
-});
-
 
 // request now playing from IFM server every NOW_PLAYING_REQUEST_TIMEOUT_MSEC
 async function getNowPlaying() {
@@ -134,8 +125,8 @@ async function getNowPlaying() {
     }
 }
 
+// example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
 function setTrackMetadata(trackMetadata) {
-    // example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
     if (trackMetadata) {
         const trackMetadatas = trackMetadata.title.split(METADATA_SPLIT_CHAR);
         var notCorrupted = trackMetadatas[0].includes(ARTIST_TITLE_SPLIT_STRING);
@@ -243,12 +234,23 @@ function extractCoverFromHTML(body) {
 
 function setLockScreenControls(index) {
     if ("mediaSession" in navigator) {
+        // play / pause / stop lockscreen commands
+        navigator.mediaSession.setActionHandler(PLAY_ACTION_NAME, () => {
+            playChannel(index);
+        });
+        navigator.mediaSession.setActionHandler(PAUSE_ACTION_NAME, () => {
+            stopAudio();
+        });
+        navigator.mediaSession.setActionHandler(STOP_ACTION_NAME, () => {
+            stopAudio();
+        });
+
+        // next track / previous track lockscreen commands
         var nextIndex = index + 1;
         var previousIndex = index - 1;
         if (index == 0) {
             navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
             navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
-                stop();
                 playChannel(nextIndex);
             });
         } else
@@ -281,6 +283,7 @@ function reset() {
     var modal = document.getElementById("trackInfoModal");
     var homeContainer = document.getElementById('container');
     hideElement(modal);
+    fetchStations();
     showElement(homeContainer);
     setScrollingText(DEFAULT_SCROLLING_TEXT);
 }

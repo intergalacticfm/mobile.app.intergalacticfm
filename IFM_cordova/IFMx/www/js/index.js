@@ -4,13 +4,24 @@ const DISPLAY_MESSAGE_BOX_ID = 'messageBox';
 const DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=MV4HVU2D4W3LJ';
 const WEBSITE_URL = 'https://intergalactic.fm/';
 const ARCHIVE_URL = 'https://videohotmix.net/';
-const DEFAULT_SCROLLING_TEXT = 'INTERGALACTIC FM SPACE TRAVELS APP'
+const DEFAULT_SCROLLING_TEXT = 'INTERGALACTIC FM SPACE TRAVELS APP';
+
+const PLAYER_CBS_ID = 'playerCBS';
+const PLAYER_DF_ID = 'playerDF';
+const PLAYER_TDM_ID = 'playerTDM';
+
+const AUDIO_CBS = document.getElementById(PLAYER_CBS_ID);
+const AUDIO_DF = document.getElementById(PLAYER_DF_ID);
+const AUDIO_TDM = document.getElementById(PLAYER_TDM_ID);
+
+const AUDIO_PLAYERS = [AUDIO_CBS, AUDIO_DF, AUDIO_TDM];
+
+var fetchedStations;
 
 window.onload = function () {
-    fetchStations();
-    this.audio = document.getElementById('player');
-    this.audio.load();
-
+    if (!fetchedStations) {
+        fetchStations();
+    }
     setScrollingText(DEFAULT_SCROLLING_TEXT);
 };
 
@@ -46,6 +57,7 @@ async function fetchStations() {
     var cbsInfo = stationsJson.stations[0];
     var dfInfo = stationsJson.stations[1];
     var tdmInfo = stationsJson.stations[2];
+
     // init radio
     var stations = [
         {
@@ -64,7 +76,15 @@ async function fetchStations() {
             howl: null
                     }
                 ];
-    feedStations(stations);
+    this.fetchedStations = stations;
+
+    // preload aggressively
+    AUDIO_CBS.src = cbsInfo.url;
+    AUDIO_CBS.load();
+    AUDIO_DF.src = dfInfo.url;
+    AUDIO_DF.load();
+    AUDIO_TDM.src = tdmInfo.url;
+    AUDIO_TDM.load();
 
     // playlist loaded successfuly
     displayMessage("System ready.<br> Select a channel to play.");

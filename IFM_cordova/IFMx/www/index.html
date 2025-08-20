@@ -5,7 +5,7 @@
     <title>Intergalactic FM</title>
     <link rel="stylesheet" type="text/css" href="css/index.css">
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, width=device-width, viewport-fit=cover">
     <meta charset="UTF-8">
 </head>
 
@@ -124,15 +124,12 @@
         <div id="nowPlayingExt"></div>
         <div id="nowPlayingCover"></div>
     </div>
-    <audio hidden id="player" src="preload.mp3" type="audio/mpeg" preload="auto" playsinline />
+    <audio hidden id="playerCBS" src="" type="audio/mpeg" preload="auto" playsinline />
+    <audio hidden id="playerDF" src="" type="audio/mpeg" preload="auto" playsinline />
+    <audio hidden id="playerTDM" src="" type="audio/mpeg" preload="auto" playsinline />
+
     <script src="js/audio.js"></script>
     <script src="js/index.js"></script>
-
-    <!-- 
-    <script src="js/radio.js"></script>
-    <script src="js/howler.core.js"></script>
-    <script src="js/lockscreen.js"></script>
-    -->
 </body>
 
 </html>
