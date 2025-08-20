@@ -239,9 +239,13 @@ if ("mediaSession" in navigator) {
     });
     navigator.mediaSession.setActionHandler(PAUSE_ACTION_NAME, () => {
         stopAudio();
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
     });
     navigator.mediaSession.setActionHandler(STOP_ACTION_NAME, () => {
         stopAudio();
+        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
     });
 }
 
