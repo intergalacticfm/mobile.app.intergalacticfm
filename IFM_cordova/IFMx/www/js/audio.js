@@ -84,22 +84,27 @@ function stopAudio() {
 }
 
 function playChannel(channelNumber) {
-    clearTimeout(nowPlayingRequestTimer);
-    if (audio) {
-        audio.pause();
+    try {
+        clearTimeout(nowPlayingRequestTimer);
+        if (audio) {
+            audio.pause();
+        }
+        audio = AUDIO_PLAYERS[channelNumber];
+        clearTimeout(nowPlayingRequestTimer);
+        this.previousExtractedCoverHTML = EMPTY_VAL;
+        var channelTitle = this.fetchedStations[channelNumber].title;
+        displayMessage(LOADING_MSG + channelTitle + "...");
+
+        audio.play();
+
+        this.selectedChannel = channelNumber + 1;
+        this.currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + channelTitle;
+        setLockScreenControls(channelNumber);
+        getNowPlaying();
+    } catch (exception) {
+        console.log(exception);
     }
-    audio = AUDIO_PLAYERS[channelNumber];
-    clearTimeout(nowPlayingRequestTimer);
-    this.previousExtractedCoverHTML = EMPTY_VAL;
-    var channelTitle = this.fetchedStations[channelNumber].title;
-    displayMessage(LOADING_MSG + channelTitle + "...");
 
-    audio.play();
-
-    this.selectedChannel = channelNumber + 1;
-    this.currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + channelTitle;
-    setLockScreenControls(channelNumber);
-    getNowPlaying();
 
 }
 
@@ -252,28 +257,32 @@ if ("mediaSession" in navigator) {
 }
 
 function setLockScreenControls(index) {
+
     // next track / previous track lockscreen commands
     var nextIndex = index + 1;
     var previousIndex = index - 1;
-    if (index == 0) {
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
-            playChannel(nextIndex);
-        });
-    } else
-    if (index == 1) {
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
-            playChannel(previousIndex);
-        });
-        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
-            playChannel(nextIndex);
-        });
-    } else
-    if (index == 2) {
-        navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
-            playChannel(previousIndex);
-        });
+
+    if ("mediaSession" in navigator) {
+        if (index == 0) {
+            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
+                playChannel(nextIndex);
+            });
+        } else
+        if (index == 1) {
+            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
+                playChannel(previousIndex);
+            });
+            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
+                playChannel(nextIndex);
+            });
+        } else
+        if (index == 2) {
+            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
+            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
+                playChannel(previousIndex);
+            });
+        }
     }
 }
 
