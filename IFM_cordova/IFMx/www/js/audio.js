@@ -38,7 +38,7 @@ const AUDIO_EVENT_PAUSE_NAME = 'pause';
 const AUDIO_EVENT_ERROR_NAME = 'error';
 const AUDIO_PLAYER_SOURCE_ID = 'audioPlayerSource';
 const LOADING_MSG = 'Loading ';
-
+var previousTrackTitle = EMPTY_VAL;
 var previousExtractedCoverHTML = EMPTY_VAL;
 var nowPlayingMetadatas = {
     "artist": "",
@@ -73,34 +73,28 @@ document.getElementById(STOP_BUTTON_ID).addEventListener("click", function () {
 });
 
 function stopAudio() {
-
-    AUDIO_CBS.currentTime = 0;
-    AUDIO_CBS.pause();
-    AUDIO_DF.currentTime = 0;
-    AUDIO_DF.pause();
-    AUDIO_TDM.currentTime = 0;
-    AUDIO_TDM.pause();
-
+    AUDIO_PLAYERS[selectedChannel].currentTime = 0;
+    AUDIO_PLAYERS[selectedChannel].pause();
 }
 
 
 function playChannel(channelNumber) {
+    selectedChannel = channelNumber;
+
     try {
         clearTimeout(nowPlayingRequestTimer);
-        if (audio) {
-            audio.pause();
-        }
         audio = AUDIO_PLAYERS[channelNumber];
         clearTimeout(nowPlayingRequestTimer);
-        this.previousExtractedCoverHTML = EMPTY_VAL;
-        var channelTitle = this.fetchedStations[channelNumber].title;
+        previousExtractedCoverHTML = EMPTY_VAL;
+        var channelTitle = fetchedStations[channelNumber].title;
         displayMessage(LOADING_MSG + channelTitle + "...");
 
         audio.play();
 
-        this.selectedChannel = channelNumber + 1;
-        this.currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + channelTitle;
-        setLockScreenControls(channelNumber);
+        currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + channelTitle;
+        setLockScreenControls(selectedChannel);
+        navigator.mediaSession.playbackState = 'playing';
+
         getNowPlaying();
     } catch (exception) {
         console.log(exception);
@@ -116,18 +110,19 @@ async function getNowPlaying() {
         const trackMetadata = await response.json();
 
         if (trackMetadata) {
-            if (this.previousTrackTitle != trackMetadata.title) {
+            if (previousTrackTitle != trackMetadata.title) {
                 setTrackMetadata(trackMetadata);
                 var newTrack = trackMetadata.title;
-                this.previousTrackTitle = newTrack;
+                previousTrackTitle = newTrack;
                 feedNowPlaying(newTrack);
                 extractCoverFromChannelContent();
             }
         }
-        this.nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
+        nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
     } catch (error) {
-        displayMessage(error);
+        console.log(error);
         reset();
+        displayMessage(error);
     }
 }
 
@@ -151,15 +146,15 @@ function setTrackMetadata(trackMetadata) {
         var country = trackMetadatas[4] ? trackMetadatas[4].trim() : EMPTY_VAL;
         var ifmxLog = trackMetadatas[5] ? trackMetadatas[5].trim() : DEFAULT_SCROLLING_TEXT;
 
-        this.nowPlayingMetadatas.artist = artist;
-        this.nowPlayingMetadatas.title = title;
-        this.nowPlayingMetadatas.album = album;
-        this.nowPlayingMetadatas.label = label;
-        this.nowPlayingMetadatas.year = year;
-        this.nowPlayingMetadatas.country = country;
+        nowPlayingMetadatas.artist = artist;
+        nowPlayingMetadatas.title = title;
+        nowPlayingMetadatas.album = album;
+        nowPlayingMetadatas.label = label;
+        nowPlayingMetadatas.year = year;
+        nowPlayingMetadatas.country = country;
 
         setScrollingText(ifmxLog);
-        var coverPath = COVER_PATH_ARRAY[this.selectedChannel - 1];
+        var coverPath = COVER_PATH_ARRAY[selectedChannel];
 
         if ("mediaSession" in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
@@ -178,10 +173,10 @@ function setTrackMetadata(trackMetadata) {
 function feedNowPlaying(title) {
 
     var fields = title.split(META_TAGS_SPLIT_CHAR);
-    var main = this.nowPlayingMetadatas.artist + ARTIST_TITLE_SPLIT_STRING + this.nowPlayingMetadatas.title;
-    var otherInfo = (this.nowPlayingMetadatas.album !== '' ? this.nowPlayingMetadatas.album : EMPTY_VAL) +
-        (this.nowPlayingMetadatas.year !== '' ? ARTIST_TITLE_SPLIT_STRING + this.nowPlayingMetadatas.year : EMPTY_VAL) +
-        (this.nowPlayingMetadatas.country !== '' ? " , " + this.nowPlayingMetadatas.country : EMPTY_VAL);
+    var main = nowPlayingMetadatas.artist + ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.title;
+    var otherInfo = (nowPlayingMetadatas.album !== '' ? nowPlayingMetadatas.album : EMPTY_VAL) +
+        (nowPlayingMetadatas.year !== '' ? ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.year : EMPTY_VAL) +
+        (nowPlayingMetadatas.country !== '' ? " , " + nowPlayingMetadatas.country : EMPTY_VAL);
 
     feedHTML(NOW_PLAYING_DIV_ID, main);
     feedHTML(NOW_PLAYING_DIV_EXT_ID, otherInfo);
@@ -209,17 +204,17 @@ async function extractCoverFromChannelContent(attempt) {
         // recursion guard
         return;
     }
-    var requestUrl = NOW_PLAYING_PICTURE_REQUEST_PREFIX + this.selectedChannel;
+    var requestUrl = NOW_PLAYING_PICTURE_REQUEST_PREFIX + (selectedChannel + 1);
     var response = await fetch(requestUrl);
     var body = await response.text();
     var extractedCoverHTML = extractCoverFromHTML(body);
     //console.log("GETTING ARTWORK...");
-    if (extractedCoverHTML != this.previousExtractedCoverHTML) {
+    if (extractedCoverHTML != previousExtractedCoverHTML) {
         //console.log("NEW ARTWORK!");
-        this.previousExtractedCoverHTML = extractedCoverHTML;
+        previousExtractedCoverHTML = extractedCoverHTML;
 
         // clean IFM inherited website styling and replace blanco img on error with local one
-        var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('https://www.intergalactic.fm/sites/default/files/covers/blanco.png', 'img/blanco.png').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="100%"').replace('height="100"', 'height="100%"');
+        var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('https://www.intergalactic.fm/sites/default/files/covers/blanco.png', 'img/blanco.png').replace('onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="100%"').replace('height="100"', 'height="100%"');
         feedHTML(NOW_PLAYING_COVER_DIV_ID, extractedCleanCoverHTML);
     } else {
         //console.log("STILL OLD ARTWORK!");
@@ -239,22 +234,22 @@ function extractCoverFromHTML(body) {
 }
 
 if ("mediaSession" in navigator) {
-    /*
+
     // play / pause / stop lockscreen commands
-    navigator.mediaSession.setActionHandler(PLAY_ACTION_NAME, () => {
+    navigator.mediaSession.setActionHandler(PLAY_ACTION_NAME, (event) => {
         playChannel(selectedChannel);
     });
     navigator.mediaSession.setActionHandler(PAUSE_ACTION_NAME, () => {
         stopAudio();
+        navigator.mediaSession.playbackState = 'paused';
         navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
         navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
     });
     navigator.mediaSession.setActionHandler(STOP_ACTION_NAME, () => {
         stopAudio();
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+        reset();
     });
-    */
+
 }
 
 function setLockScreenControls(index) {
@@ -267,20 +262,24 @@ function setLockScreenControls(index) {
         if (index == 0) {
             navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
             navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
+                stopAudio();
                 playChannel(nextIndex);
             });
         } else
         if (index == 1) {
             navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
+                stopAudio();
                 playChannel(previousIndex);
             });
             navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
+                stopAudio();
                 playChannel(nextIndex);
             });
         } else
         if (index == 2) {
             navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
             navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
+                stopAudio();
                 playChannel(previousIndex);
             });
         }
@@ -292,9 +291,9 @@ function reset() {
     feedHTML(NOW_PLAYING_DIV_EXT_ID, EMPTY_VAL);
     feedHTML(NOW_PLAYING_COVER_DIV_ID, EMPTY_VAL);
     clearTimeout(nowPlayingRequestTimer);
-    this.previousTrackTitle = EMPTY_VAL;
-    this.previousExtractedCoverHTML = EMPTY_VAL;
-    this.selectedChannel = EMPTY_VAL;
+    previousTrackTitle = EMPTY_VAL;
+    previousExtractedCoverHTML = EMPTY_VAL;
+    selectedChannel = EMPTY_VAL;
     document.title = PAGE_TITLE_DEFAULT;
     var modal = document.getElementById("trackInfoModal");
     var homeContainer = document.getElementById('container');

@@ -19,6 +19,7 @@ const AUDIO_PLAYERS = [AUDIO_CBS, AUDIO_DF, AUDIO_TDM];
 var fetchedStations;
 
 window.onload = function () {
+    console.log("ONLOAD");
     if (!fetchedStations) {
         fetchStations();
     }
@@ -44,13 +45,15 @@ document.getElementById("archiveRedirect").addEventListener("click",
 /* requests stations info and stream url from IFM server STATIONS_JSON_URL */
 async function fetchStations() {
 
-    const response = await fetch(STATIONS_JSON_URL).catch(err => {
-        var errorMessage = "Unable to load the playlist."
-        if (err) {
-            errorMessage += "<br>" + err;
+    const response = await fetch(STATIONS_JSON_URL).then((response) => {
+        if (response.status >= 400 && response.status < 600) {
+            var errorMessage = "Unable to load the playlist: " + response.status + " - " +
+                response.statusText;
+            displayMessage(errorMessage);
         }
-        displayMessage(errorMessage);
+        return response;
     });
+
 
     const stationsJson = await response.json();
     var cbsInfo = stationsJson.stations[0];
@@ -80,12 +83,18 @@ async function fetchStations() {
     // TODO: deactivate button if in error, reactivate at load
     AUDIO_CBS.onerror = function () {
         // deactivate CBS
+        alert("CBS stream is not available.");
+        disableChannel(CBS_BUTTON_ID);
     };
-    AUDIO_DF.onerror = function (error) {
+    AUDIO_DF.onerror = function () {
         // deactivate DF
+        alert("Disco Fetish stream is not available.");
+        disableChannel(DF_BUTTON_ID);
     };
     AUDIO_TDM.onerror = function () {
         // deactivate TDM
+        alert("The Dream Machine stream is not available.");
+        disableChannel(TDM_BUTTON_ID);
     };
 
     // preload aggressively
@@ -118,4 +127,8 @@ function showElement(element) {
 
 function hideElement(element) {
     element.style.display = "none";
+}
+
+function disableChannel(channelButtonId) {
+    document.getElementById(channelButtonId).style.display = "none";
 }
