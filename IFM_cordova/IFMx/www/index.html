@@ -12,7 +12,7 @@
 <body>
     <div class="header">
         <!-- Header -->
-        <h1><img src="img/logo.png" alt="IFM logo" style="max-height: 3em"></h1>
+        <img id="headerImage" src="img/logo128.png" alt="IFM logo">
     </div>
     <div class="scrollTextContainer">
         <div class="ifmxScrollText"></div>
@@ -26,7 +26,7 @@
                         <td>
                             <img class="channelIcon" src="img/cbs.png" />
                         </td>
-                        <td>
+                        <td class="channelNameTd">
                             CYBERNETIC BROADCASTING SYSTEM
                         </td>
                     </tr>
@@ -39,7 +39,7 @@
                         <td>
                             <img class="channelIcon" src="img/df.png" />
                         </td>
-                        <td>
+                        <td class="channelNameTd">
                             DISCO FETISH
                         </td>
                     </tr>
@@ -52,7 +52,7 @@
                         <td>
                             <img class="channelIcon" src="img/tdm.png" />
                         </td>
-                        <td>
+                        <td class="channelNameTd">
                             THE DREAM MACHINE
                         </td>
                     </tr>
@@ -119,10 +119,10 @@
     </div>
     <!-- Now Playing -->
     <div id="trackInfoModal" class="modal">
-        <button id="stopButton" class="close">←</button>
         <div id="nowPlaying"></div>
         <div id="nowPlayingExt"></div>
         <div id="nowPlayingCover"></div>
+        <button id="stopButton" class="close">↵</button>
     </div>
     <audio hidden id="playerCBS" src="" type="audio/mpeg" />
     <audio hidden id="playerDF" src="" type="audio/mpeg" />

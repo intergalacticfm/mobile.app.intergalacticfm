@@ -219,7 +219,7 @@ async function extractCoverFromChannelContent(attempt) {
         this.previousExtractedCoverHTML = extractedCoverHTML;
 
         // clean IFM inherited website styling and replace blanco img on error with local one
-        var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('https://www.intergalactic.fm/sites/default/files/covers/blanco.png', 'img/blanco.png').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="80%"').replace('height="100"', 'height="80%"');
+        var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('https://www.intergalactic.fm/sites/default/files/covers/blanco.png', 'img/blanco.png').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="100%"').replace('height="100"', 'height="100%"');
         feedHTML(NOW_PLAYING_COVER_DIV_ID, extractedCleanCoverHTML);
     } else {
         //console.log("STILL OLD ARTWORK!");
