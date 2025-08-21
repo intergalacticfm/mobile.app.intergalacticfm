@@ -42,7 +42,6 @@ document.getElementById("archiveRedirect").addEventListener("click",
     });
 
 /* requests stations info and stream url from IFM server STATIONS_JSON_URL */
-
 async function fetchStations() {
 
     const response = await fetch(STATIONS_JSON_URL).catch(err => {
@@ -77,6 +76,17 @@ async function fetchStations() {
                     }
                 ];
     this.fetchedStations = stations;
+
+    // TODO: deactivate button if in error, reactivate at load
+    AUDIO_CBS.onerror = function () {
+        // deactivate CBS
+    };
+    AUDIO_DF.onerror = function (error) {
+        // deactivate DF
+    };
+    AUDIO_TDM.onerror = function () {
+        // deactivate TDM
+    };
 
     // preload aggressively
     AUDIO_CBS.src = cbsInfo.url;
