@@ -11,6 +11,7 @@
     <preference name="AllowInlineMediaPlayback" value="true" />
     <preference name="MediaTypesRequiringUserActionForPlayback" value="false" />
     <preference name="AutoHideSplashScreen" value="true" />
+    <preference name="AllowInlineMediaPlayback" value="true" />
     <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/screen/android/splash-square.png" />
     <preference name="AndroidWindowSplashScreenBackground" value="#000000" />
 

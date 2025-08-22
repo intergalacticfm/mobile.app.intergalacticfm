@@ -19,7 +19,6 @@ const AUDIO_PLAYERS = [AUDIO_CBS, AUDIO_DF, AUDIO_TDM];
 var fetchedStations;
 
 window.onload = function () {
-    console.log("ONLOAD");
     if (!fetchedStations) {
         fetchStations();
     }

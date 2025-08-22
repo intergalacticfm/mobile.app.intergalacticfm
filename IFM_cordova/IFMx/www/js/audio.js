@@ -50,8 +50,6 @@ var nowPlayingMetadatas = {
     "ifmxLog": ""
 }
 
-var audio;
-
 // channel button actions
 document.getElementById("cbsChannelButton").addEventListener("click",
     function () {
@@ -73,34 +71,74 @@ document.getElementById(STOP_BUTTON_ID).addEventListener("click", function () {
 });
 
 function stopAudio() {
-    AUDIO_PLAYERS[selectedChannel].currentTime = 0;
-    AUDIO_PLAYERS[selectedChannel].pause();
+    AUDIO_CBS.pause();
+    AUDIO_DF.pause();
+    AUDIO_TDM.pause();
 }
 
 
 function playChannel(channelNumber) {
+
+    stopAudio();
+
+    clearTimeout(nowPlayingRequestTimer);
     selectedChannel = channelNumber;
+    var audio = AUDIO_PLAYERS[channelNumber];
+    audio.play();
 
     try {
-        clearTimeout(nowPlayingRequestTimer);
-        audio = AUDIO_PLAYERS[channelNumber];
-        clearTimeout(nowPlayingRequestTimer);
         previousExtractedCoverHTML = EMPTY_VAL;
         var channelTitle = fetchedStations[channelNumber].title;
         displayMessage(LOADING_MSG + channelTitle + "...");
-
-        audio.play();
-
         currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + channelTitle;
-        setLockScreenControls(selectedChannel);
-        navigator.mediaSession.playbackState = 'playing';
-
         getNowPlaying();
     } catch (exception) {
         console.log(exception);
     }
+    setLockscreenControls(channelNumber);
+}
 
+function setLockscreenControls(channelNumber) {
+    if ("mediaSession" in navigator) {
 
+        // play / pause / stop lockscreen commands
+        navigator.mediaSession.setActionHandler(PLAY_ACTION_NAME, () => {
+            playChannel(channelNumber);
+        });
+        navigator.mediaSession.setActionHandler(PAUSE_ACTION_NAME, () => {
+            stopAudio();
+        });
+
+        // next track / previous track lockscreen commands
+        var nextIndex = channelNumber + 1;
+        var previousIndex = channelNumber - 1;
+        if (channelNumber == 0) {
+            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
+            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
+                playChannel(nextIndex);
+            });
+        } else
+        if (channelNumber == 1) {
+            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
+                playChannel(previousIndex);
+            });
+            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
+                playChannel(nextIndex);
+            });
+        } else
+        if (channelNumber == 2) {
+            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
+            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
+                playChannel(previousIndex);
+            });
+        }
+        // coming back from lockscreen action 
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                // no action  
+            }
+        });
+    }
 }
 
 // request now playing from IFM server every NOW_PLAYING_REQUEST_TIMEOUT_MSEC
@@ -231,59 +269,6 @@ function extractCoverFromHTML(body) {
     var startOfCoverImgIndex = body.indexOf('<img');
     var endOfCoverImgIndex = body.indexOf('alt=""/>') + 10;
     return body.substring(startOfCoverImgIndex, endOfCoverImgIndex);
-}
-
-if ("mediaSession" in navigator) {
-
-    // play / pause / stop lockscreen commands
-    navigator.mediaSession.setActionHandler(PLAY_ACTION_NAME, (event) => {
-        playChannel(selectedChannel);
-    });
-    navigator.mediaSession.setActionHandler(PAUSE_ACTION_NAME, () => {
-        stopAudio();
-        navigator.mediaSession.playbackState = 'paused';
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-        navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-    });
-    navigator.mediaSession.setActionHandler(STOP_ACTION_NAME, () => {
-        stopAudio();
-        reset();
-    });
-
-}
-
-function setLockScreenControls(index) {
-
-    // next track / previous track lockscreen commands
-    var nextIndex = index + 1;
-    var previousIndex = index - 1;
-
-    if ("mediaSession" in navigator) {
-        if (index == 0) {
-            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
-                stopAudio();
-                playChannel(nextIndex);
-            });
-        } else
-        if (index == 1) {
-            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
-                stopAudio();
-                playChannel(previousIndex);
-            });
-            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
-                stopAudio();
-                playChannel(nextIndex);
-            });
-        } else
-        if (index == 2) {
-            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
-            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
-                stopAudio();
-                playChannel(previousIndex);
-            });
-        }
-    }
 }
 
 function reset() {
