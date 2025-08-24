@@ -28,6 +28,7 @@ window.onload = function () {
     if (!audioContext) {
         audioContext = new(window.AudioContext || window.webkitAudioContext)();
     }
+    document.addEventListener("deviceready", onDeviceReady, false);
 };
 
 // prevents back button of android to stop music in background
@@ -36,17 +37,34 @@ document.addEventListener('backbutton', function () {
     // For example, pause the music or navigate to a previous screen
     if (isPlaying) {
         //pauseMusic(); // Custom function to pause music
-        alert("STILL PLAYING BIATCH");
+        //alert("STILL PLAYING BIATCH");
     } else {
         // Optionally, you can navigate back or exit the app
         navigator.app.backHistory(); // Go back in history
     }
 }, false);
 
-// prevents lockscreen to stop audio
-document.addEventListener('deviceready', function () {
-    // Enable background mode
+
+function onDeviceReady() {
+    console.log("DEVICE IS READY!");
+    cordova.plugins.MusicService.start(
+        () => console.log("Music service started"),
+        (err) => console.error("Failed to start music service:", err)
+    );
+
+    // Per fermare
+    // cordova.plugins.MusicService.stop();
+
+    // Enable background mode --> THIS crashes in android studio because of missing FOREIGN_SERVICe permissions
+
+    /*
     cordova.plugins.backgroundMode.enable();
+    cordova.plugins.backgroundMode.on('activate', function () {
+        cordova.plugins.backgroundMode.disableWebViewOptimizations();
+        console.log('ZZZZZZZ App is in background, keeping audio alive!');
+
+    });
+    
 
     // Optional: Listen for background mode events
     cordova.plugins.backgroundMode.on('activate', function () {
@@ -57,8 +75,8 @@ document.addEventListener('deviceready', function () {
     cordova.plugins.backgroundMode.on('deactivate', function () {
         // This will be called when the background mode is deactivated
     });
-}, false);
-
+    */
+}
 
 
 

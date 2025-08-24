@@ -96,9 +96,17 @@ function stop() {
 }
 
 function playChannel(channelNumber) {
-    selectedChannel = channelNumber;
-    AUDIO_PLAYER.src = fetchedStations[channelNumber].src;
-    AUDIO_PLAYER.load();
+    try {
+        selectedChannel = channelNumber;
+        AUDIO_PLAYER.src = fetchedStations[channelNumber].src;
+        AUDIO_PLAYER.load();
+        audioContext.resume().then(() => {
+            AUDIO_PLAYER.play();
+        });
+    } catch (error) {
+        console.log(error);
+        //alert("playChannel: " + error);
+    }
 
     /*
     if (navigator.mediaSession.playbackState = 'playing') {
@@ -113,11 +121,6 @@ function playChannel(channelNumber) {
     }
     */
 
-    audioContext.resume().then(() => {
-        AUDIO_PLAYER.play();
-        getNowPlaying();
-    });
-
     setLockscreenTrackCommands();
     addAudioEventListeners(AUDIO_PLAYER);
     clearTimeout(nowPlayingRequestTimer);
@@ -126,27 +129,30 @@ function playChannel(channelNumber) {
     var channelTitle = fetchedStations[channelNumber].title;
     displayMessage(LOADING_MSG + channelTitle + "...");
     currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + channelTitle;
+    getNowPlaying();
 
 }
 
 function addAudioEventListeners(audioPlayer) {
+    if ("mediaSession" in navigator) {
+        audioPlayer.addEventListener(PLAY_ACTION_NAME, () => {
+            navigator.mediaSession.playbackState = 'playing';
+        });
 
-    audioPlayer.addEventListener(PLAY_ACTION_NAME, () => {
-        navigator.mediaSession.playbackState = 'playing';
-    });
+        audioPlayer.addEventListener(PAUSE_ACTION_NAME, () => {
+            navigator.mediaSession.playbackState = 'paused';
+        });
 
-    audioPlayer.addEventListener(PAUSE_ACTION_NAME, () => {
-        navigator.mediaSession.playbackState = 'paused';
-    });
-
-    // coming back from lockscreen action 
-    document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") {
-            if (navigator.mediaSession.playbackState == "playing") {
-                // do nothing for god sake
+        // coming back from lockscreen action 
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                if (navigator.mediaSession.playbackState == "playing") {
+                    // do nothing for god sake
+                }
             }
-        }
-    });
+        });
+    }
+
 }
 
 // request now playing from IFM server every NOW_PLAYING_REQUEST_TIMEOUT_MSEC
@@ -166,6 +172,7 @@ async function getNowPlaying() {
         }
         nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
     } catch (error) {
+        //alert("NOW PLAYIN ERROR: " + error);
         console.log(error);
         reset();
         displayMessage(error);

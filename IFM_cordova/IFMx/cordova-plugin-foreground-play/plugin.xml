@@ -1,0 +1,42 @@
+<plugin id="cordova-plugin-foreground-play" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins" xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <name>Foreground Music Service</name>
+    <description>Foreground service for music playback</description>
+    <license>MIT</license>
+    <keywords>cordova,foreground,music,service</keywords>
+
+    <platform name="android">
+
+        <!-- Permissions -->
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+        </config-file>
+
+        <!-- Service declaration -->
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <service android:name="fm.intergalactic.MusicPlaybackService" android:enabled="true" android:exported="false" android:foregroundServiceType="mediaPlayback" />
+        </config-file>
+
+        <!-- Mapping Cordova JS -> Java class -->
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="MusicService">
+                <param name="android-package" value="fm.intergalactic.MusicService" />
+            </feature>
+        </config-file>
+
+        <!-- Copy Java sources -->
+        <source-file src="src/android/MusicPlaybackService.java" target-dir="src/fm/intergalactic" />
+        <source-file src="src/android/MusicService.java" target-dir="src/fm/intergalactic" />
+
+        <!-- AndroidX media library -->
+        <framework src="androidx.media:media:1.6.0" />
+    </platform>
+
+    <!-- JS bridge -->
+    <js-module src="www/music-service.js" name="MusicService">
+        <clobbers target="cordova.plugins.MusicService" />
+    </js-module>
+</plugin>
