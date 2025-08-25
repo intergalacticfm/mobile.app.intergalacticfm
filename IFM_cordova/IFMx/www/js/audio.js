@@ -68,31 +68,15 @@ document.getElementById("tdmChannelButton").addEventListener("click",
 
 // stop button
 document.getElementById(STOP_BUTTON_ID).addEventListener("click", function () {
-    /*
-    stopChannel(0);
-    stopChannel(1);
-    stopChannel(2);
-    */
     stop();
     reset();
 });
 
-/*
-function stopChannel(channelNumber) {
-    AUDIO_PLAYERS[channelNumber].src = '';
-}
-
-function stopOtherChannels(excludedChannel) {
-    for (var i = 0; i < AUDIO_PLAYERS.length; i++) {
-        if (i != excludedChannel) {
-            stopChannel(i);
-        }
-    }
-}
-*/
-
 function stop() {
     AUDIO_PLAYER.src = '';
+    if (cordova) {
+        cordova.plugins.MusicService.setPlaying(false);
+    }
 }
 
 function playChannel(channelNumber) {
@@ -107,19 +91,6 @@ function playChannel(channelNumber) {
         console.log(error);
         //alert("playChannel: " + error);
     }
-
-    /*
-    if (navigator.mediaSession.playbackState = 'playing') {
-        //stopOtherChannels(channelNumber);
-        stop();
-    }
-    /*
-    const audioPlayer = AUDIO_PLAYERS[channelNumber];
-    if (audioPlayer.src) {
-        audioPlayer.src = fetchedStations[channelNumber].src;
-        audioPlayer.load();
-    }
-    */
 
     setLockscreenTrackCommands();
     addAudioEventListeners(AUDIO_PLAYER);
@@ -152,7 +123,6 @@ function addAudioEventListeners(audioPlayer) {
             }
         });
     }
-
 }
 
 // request now playing from IFM server every NOW_PLAYING_REQUEST_TIMEOUT_MSEC
@@ -219,6 +189,21 @@ function setTrackMetadata(trackMetadata) {
                 }]
             });
         }
+        if (cordova) {
+            cordova.plugins.MusicService.updateMetadata(
+                nowPlayingMetadatas.title,
+                nowPlayingMetadatas.artist,
+                nowPlayingMetadatas.album,
+                COVER_PATH_ARRAY[selectedChannel],
+                function (res) {
+                    console.log("OK", res);
+                },
+                function (err) {
+                    console.error("ERR", err);
+                }
+            );
+            cordova.plugins.MusicService.setPlaying(true);
+        }
     }
 }
 
@@ -227,7 +212,6 @@ function setLockscreenTrackCommands() {
         navigator.mediaSession.setActionHandler(SEEK_BACKWARD_ACTION_NAME, null);
         navigator.mediaSession.setActionHandler(SEEK_FORWARD_ACTION_NAME, null);
 
-        /* TO BE TESTED BETTER */
         var previousIndex = selectedChannel == 0 ? 2 : (selectedChannel - 1);
         var nextIndex = selectedChannel == 2 ? 0 : (selectedChannel + 1);
 
@@ -251,6 +235,16 @@ function setLockscreenTrackCommands() {
                 playChannel(previousIndex);
             });
         }
+    }
+    if (cordova) {
+        cordova.plugins.MusicService.onEvent(function (eventName) {
+            if (eventName === 'next') {
+                playChannel(nextIndex);
+            }
+            if (eventName === 'prev') {
+                playChannel(previousIndex);
+            }
+        });
     }
 }
 

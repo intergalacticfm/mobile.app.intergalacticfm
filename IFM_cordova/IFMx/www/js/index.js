@@ -52,30 +52,16 @@ function onDeviceReady() {
         (err) => console.error("Failed to start music service:", err)
     );
 
-    // Per fermare
-    // cordova.plugins.MusicService.stop();
+    // lockscreen controls
 
-    // Enable background mode --> THIS crashes in android studio because of missing FOREIGN_SERVICe permissions
-
-    /*
-    cordova.plugins.backgroundMode.enable();
-    cordova.plugins.backgroundMode.on('activate', function () {
-        cordova.plugins.backgroundMode.disableWebViewOptimizations();
-        console.log('ZZZZZZZ App is in background, keeping audio alive!');
-
-    });
-    
-
-    // Optional: Listen for background mode events
-    cordova.plugins.backgroundMode.on('activate', function () {
-        // This will be called when the background mode is activated
-        // You can pause or resume your audio here if needed
+    cordova.plugins.MusicService.setEventListener(function (event) {
+        if (event === "pause") {
+            console.log("lockscreen command PAUSE!");
+        } else if (event === "play") {
+            console.log("lockscreen command PLAY!");
+        }
     });
 
-    cordova.plugins.backgroundMode.on('deactivate', function () {
-        // This will be called when the background mode is deactivated
-    });
-    */
 }
 
 

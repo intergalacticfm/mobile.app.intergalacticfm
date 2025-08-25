@@ -25,6 +25,30 @@ public class MusicService extends CordovaPlugin {
             cordova.getActivity().stopService(serviceIntent);
             callbackContext.success();
             return true;
+        }else if ("updateMetadata".equals(action)) {
+            String title = args.optString(0, "");
+            String artist = args.optString(1, "");
+            String album = args.optString(2, "");
+            String cover = args.optString(3, "");
+
+            Intent i = new Intent(cordova.getActivity(), MusicPlaybackService.class);
+            i.setAction("ACTION_UPDATE_METADATA");
+            i.putExtra("title", title);
+            i.putExtra("artist", artist);
+            i.putExtra("album", album);
+            i.putExtra("cover", cover);
+            cordova.getActivity().startService(i);
+            callbackContext.success();
+            return true;
+
+        } else if ("setPlaying".equals(action)) {
+            boolean playing = args.optBoolean(0, true);
+            Intent i = new Intent(cordova.getActivity(), MusicPlaybackService.class);
+            i.setAction("ACTION_SET_PLAYING");
+            i.putExtra("playing", playing);
+            cordova.getActivity().startService(i);
+            callbackContext.success();
+            return true;
         }
         return false;
     }

@@ -1,0 +1,7 @@
+ANDROID BUILD STEPS:
+
+cordova platform add android
+cordova prepare android
+cordova plugin add ./cordova-plugin-foreground-play
+cordova build android
+

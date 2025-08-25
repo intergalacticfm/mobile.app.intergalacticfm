@@ -30,6 +30,8 @@
         <!-- Copy Java sources -->
         <source-file src="src/android/MusicPlaybackService.java" target-dir="src/fm/intergalactic" />
         <source-file src="src/android/MusicService.java" target-dir="src/fm/intergalactic" />
+        <source-file src="src/android/MusicServicePlugin.java" target-dir="src/fm/intergalactic" />
+        <source-file src="src/android/MusicController.java" target-dir="src/fm/intergalactic" />
 
         <!-- AndroidX media library -->
         <framework src="androidx.media:media:1.6.0" />
