@@ -70,7 +70,7 @@ public class MusicPlaybackService extends Service {
         // Notifica di base per restare in foreground
         Notification notif = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(getApplicationInfo().icon)
-                .setContentTitle("No station such dedication")
+                .setContentTitle("Playing music")
                 .setOngoing(true)
                 .build();
 
@@ -99,12 +99,6 @@ public class MusicPlaybackService extends Service {
 
             // Stato playback
             PlaybackStateCompat state = new PlaybackStateCompat.Builder()
-                    .setActions(
-                            PlaybackStateCompat.ACTION_PLAY |
-                                    PlaybackStateCompat.ACTION_PAUSE |
-                                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
-                                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-                    )
                     .setState(PlaybackStateCompat.STATE_PLAYING,
                             PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN,
                             1.0f)
@@ -118,15 +112,8 @@ public class MusicPlaybackService extends Service {
                     .setSmallIcon(getApplicationInfo().icon)
                     .setLargeIcon(coverBitmap)
                     .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                            .setMediaSession(mediaSession.getSessionToken())
-                            .setShowActionsInCompactView(0, 1, 2))
-                    .addAction(new NotificationCompat.Action(
-                            android.R.drawable.ic_media_previous, "Previous", null))
-                    .addAction(new NotificationCompat.Action(
-                            android.R.drawable.ic_media_pause, "Pause", null))
-                    .addAction(new NotificationCompat.Action(
-                            android.R.drawable.ic_media_next, "Next", null))
-                    .setOngoing(true)
+                            .setMediaSession(mediaSession.getSessionToken()))
+                    .setOngoing(true)  // mantiene la notifica in foreground
                     .build();
 
             startForeground(NOTIF_ID, notification);
