@@ -70,7 +70,7 @@ public class MusicPlaybackService extends Service {
         // Notifica di base per restare in foreground
         Notification notif = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(getApplicationInfo().icon)
-                .setContentTitle("Playing music")
+                .setContentTitle("No station such dedication")
                 .setOngoing(true)
                 .build();
 
