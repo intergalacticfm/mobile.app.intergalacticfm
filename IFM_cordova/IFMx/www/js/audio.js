@@ -80,6 +80,7 @@ function stop() {
 }
 
 function playChannel(channelNumber) {
+    var channelTitle = fetchedStations[channelNumber].title;
     try {
         selectedChannel = channelNumber;
         AUDIO_PLAYER.src = fetchedStations[channelNumber].src;
@@ -87,20 +88,24 @@ function playChannel(channelNumber) {
         audioContext.resume().then(() => {
             AUDIO_PLAYER.play();
         });
+        setLockscreenTrackCommands();
+        addAudioEventListeners(AUDIO_PLAYER);
+        clearTimeout(nowPlayingRequestTimer);
+        previousExtractedCoverHTML = EMPTY_VAL;
+
+        var channelTitle = fetchedStations[channelNumber].title;
+        displayMessage(LOADING_MSG + channelTitle + "...");
+        currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + channelTitle;
+        getNowPlaying();
     } catch (error) {
-        console.log(error);
-        //alert("playChannel: " + error);
+        var errorMessage =
+            "Error while loading " + channelTitle + ": " + error;
+        console.log(errorMessage);
+        alert("Error while loading " + channelTitle + ": " + error);
+        reset();
     }
 
-    setLockscreenTrackCommands();
-    addAudioEventListeners(AUDIO_PLAYER);
-    clearTimeout(nowPlayingRequestTimer);
-    previousExtractedCoverHTML = EMPTY_VAL;
 
-    var channelTitle = fetchedStations[channelNumber].title;
-    displayMessage(LOADING_MSG + channelTitle + "...");
-    currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + channelTitle;
-    getNowPlaying();
 
 }
 

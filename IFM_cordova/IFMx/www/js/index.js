@@ -31,19 +31,7 @@ window.onload = function () {
     document.addEventListener("deviceready", onDeviceReady, false);
 };
 
-// prevents back button of android to stop music in background
-document.addEventListener('backbutton', function () {
-    // Your custom logic here
-    // For example, pause the music or navigate to a previous screen
-    if (isPlaying) {
-        //pauseMusic(); // Custom function to pause music
-        //alert("STILL PLAYING BIATCH");
-    } else {
-        // Optionally, you can navigate back or exit the app
-        navigator.app.backHistory(); // Go back in history
-    }
-}, false);
-
+var cordova;
 
 function onDeviceReady() {
     console.log("DEVICE IS READY!");
@@ -53,7 +41,7 @@ function onDeviceReady() {
     );
 
     // lockscreen controls
-
+    this.cordova = cordova;
     cordova.plugins.MusicService.setEventListener(function (event) {
         if (event === "pause") {
             console.log("lockscreen command PAUSE!");
