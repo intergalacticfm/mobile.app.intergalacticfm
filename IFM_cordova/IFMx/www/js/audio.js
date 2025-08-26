@@ -2,46 +2,9 @@ var currentNowPlayingUrl;
 var nowPlayingRequestTimer;
 var selectedChannel;
 var stations;
-
-const NOW_PLAYING_REQUEST_TIMEOUT_MSEC = 4000;
-const NOW_PLAYING_REQUEST_PREFIX = 'https://www.intergalactic.fm/now-playing?channel=';
-const NOW_PLAYING_PICTURE_REQUEST_PREFIX = 'https://www.intergalactic.fm/channel-content/';
-const NOW_PLAYING_DIV_ID = 'nowPlaying';
-const TRACK_META_DIV_ID = 'track-meta';
-const NOW_PLAYING_DIV_EXT_ID = 'nowPlayingExt';
-const NOW_PLAYING_COVER_DIV_ID = 'nowPlayingCover';
-const EMPTY_VAL = '';
-const SPACE = ' ';
-const META_TAGS_SPLIT_CHAR = '|';
-const LINE_BREAK = '<br>';
-const PAGE_TITLE_DEFAULT = 'Intergalactic FM';
-const CBS_BUTTON_ID = 'cbsChannelButton';
-const DF_BUTTON_ID = 'dfChannelButton';
-const TDM_BUTTON_ID = 'tdmChannelButton';
-const STATIONS_BUTTON_ID_LIST = [CBS_BUTTON_ID, DF_BUTTON_ID, TDM_BUTTON_ID];
-const STOP_BUTTON_ID = 'stopButton';
-const COVER_PATH = "img/logo128.png";
-const CBS_COVER_PATH = "img/cbs128.png";
-const DF_COVER_PATH = "img/df128.png";
-const TDM_COVER_PATH = "img/tdm128.png";
-const COVER_PATH_ARRAY = [CBS_COVER_PATH, DF_COVER_PATH, TDM_COVER_PATH];
-const ARTIST_TITLE_SPLIT_STRING = ' - ';
-const METADATA_SPLIT_CHAR = '|';
-const AUDIO_CONTROLS_KEY = 'controls';
-const AUDIO_EVENT_PLAYING_NAME = 'playing';
-const AUDIO_EVENT_PAUSE_NAME = 'pause';
-const AUDIO_EVENT_ERROR_NAME = 'error';
-const AUDIO_PLAYER_SOURCE_ID = 'audioPlayerSource';
-const LOADING_MSG = 'Loading ';
 var previousTrackTitle = EMPTY_VAL;
 var previousExtractedCoverHTML = EMPTY_VAL;
-const NEXT_TRACK_ACTION_NAME = 'nexttrack';
-const PREVIOUS_TRACK_ACTION_NAME = 'previoustrack';
-const PLAY_ACTION_NAME = 'play';
-const PAUSE_ACTION_NAME = 'pause';
-const STOP_ACTION_NAME = 'stop';
-const SEEK_FORWARD_ACTION_NAME = 'seekforward';
-const SEEK_BACKWARD_ACTION_NAME = 'seekbackward';
+
 var nowPlayingMetadatas = {
     "artist": "",
     "title": "",
@@ -101,11 +64,10 @@ function playChannel(channelNumber) {
         var errorMessage =
             "Error while loading " + channelTitle + ": " + error;
         console.log(errorMessage);
-        alert("Error while loading " + channelTitle + ": " + error);
+        //alert("Error while loading " + channelTitle + ": " + error);
         reset();
+        displayMessage(errorMessage);
     }
-
-
 
 }
 

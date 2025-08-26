@@ -1,21 +1,3 @@
-// where all streaming url and radio info are fetched from
-const STATIONS_JSON_URL = 'https://intergalactic.fm/sd/stations.json';
-const DISPLAY_MESSAGE_BOX_ID = 'messageBox';
-const DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=MV4HVU2D4W3LJ';
-const WEBSITE_URL = 'https://intergalactic.fm/';
-const ARCHIVE_URL = 'https://videohotmix.net/';
-const DEFAULT_SCROLLING_TEXT = 'INTERGALACTIC FM SPACE TRAVELS APP version 0.2';
-
-const PLAYER_CBS_ID = 'playerCBS';
-const PLAYER_DF_ID = 'playerDF';
-const PLAYER_TDM_ID = 'playerTDM';
-
-const CBS_AUDIO_PLAYER = document.getElementById(PLAYER_CBS_ID);
-const DF_AUDIO_PLAYER = document.getElementById(PLAYER_DF_ID);
-const TDM_AUDIO_PLAYER = document.getElementById(PLAYER_TDM_ID);
-const AUDIO_PLAYERS = [CBS_AUDIO_PLAYER, DF_AUDIO_PLAYER, TDM_AUDIO_PLAYER];
-const AUDIO_PLAYER = document.getElementById('player');
-
 var fetchedStations;
 let audioContext;
 
