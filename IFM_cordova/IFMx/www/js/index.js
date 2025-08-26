@@ -15,6 +15,9 @@ window.onload = function () {
 
 var cordova;
 
+/*
+this function is for using the android plugin, cordova libraries will not be available before this event has triggered
+*/
 function onDeviceReady() {
     //console.log("DEVICE IS READY!");
     if (cordova.plugins.MusicService) {
@@ -42,9 +45,8 @@ document.getElementById("archiveRedirect").addEventListener("click",
         window.location.href = ARCHIVE_URL;
     });
 
-/* requests stations info and stream url from IFM server STATIONS_JSON_URL */
+/* requests stations info and stream url from IFM server constants.STATIONS_JSON_URL */
 async function fetchStations() {
-
     const response = await fetch(STATIONS_JSON_URL).then((response) => {
         if (response.status >= 400 && response.status < 600) {
             var errorMessage = "Unable to load the playlist: " + response.status + " - " +
@@ -54,13 +56,12 @@ async function fetchStations() {
         return response;
     });
 
-
     const stationsJson = await response.json();
     var cbsInfo = stationsJson.stations[0];
     var dfInfo = stationsJson.stations[1];
     var tdmInfo = stationsJson.stations[2];
 
-    // init radio
+    // init stations object shared with audio.js 
     fetchedStations = [
         {
             title: cbsInfo.name,
@@ -78,41 +79,30 @@ async function fetchStations() {
             howl: null
                     }
                 ];
-    // preload
-    /*
-    CBS_AUDIO_PLAYER.src = cbsInfo.url;
-    CBS_AUDIO_PLAYER.load();
-    DF_AUDIO_PLAYER.src = dfInfo.url;
-    DF_AUDIO_PLAYER.load();
-    TDM_AUDIO_PLAYER.src = tdmInfo.url;
-    TDM_AUDIO_PLAYER.load();
-    */
 
     // playlist loaded successfuly
     displayMessage("System ready.<br> Select a channel to play.");
 }
 
-
+/* the rolling text right after the ifm logo, set as default in constants.DEFAULT_SCROLLING_TEXT */
 function setScrollingText(textForScrolling) {
     document.getElementsByClassName("ifmxScrollText")[0].innerHTML = textForScrolling;
 }
 
+/* set the message displayed after the channels */
 function displayMessage(message) {
     feedHTML(DISPLAY_MESSAGE_BOX_ID, message);
 }
 
+/* utility function for changing inner html given an element id */
 function feedHTML(elementId, value) {
     document.getElementById(elementId).innerHTML = value;
 }
-
+/* utility function for showing an element in html, used for the "now playing" modal */
 function showElement(element) {
     element.style.display = "block";
 }
-
+/* utility function for hiding an element in html, used for the "now playing" modal */
 function hideElement(element) {
     element.style.display = "none";
-}
-
-function disableChannel(channelButtonId) {
-    document.getElementById(channelButtonId).style.display = "none";
 }

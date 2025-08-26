@@ -1,3 +1,4 @@
+/* all the constants used in the scripts */
 const STATIONS_JSON_URL = 'https://intergalactic.fm/sd/stations.json';
 const DISPLAY_MESSAGE_BOX_ID = 'messageBox';
 const DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=MV4HVU2D4W3LJ';
