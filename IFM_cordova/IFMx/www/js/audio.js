@@ -156,7 +156,8 @@ function setTrackMetadata(trackMetadata) {
                 }]
             });
         }
-        if (cordova) {
+        if (cordova && cordova.plugins.MusicService) {
+            // Android
             cordova.plugins.MusicService.updateMetadata(
                 nowPlayingMetadatas.title,
                 nowPlayingMetadatas.artist,

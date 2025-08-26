@@ -17,13 +17,14 @@ var cordova;
 
 function onDeviceReady() {
     //console.log("DEVICE IS READY!");
-    cordova.plugins.MusicService.start(
-        () => console.log("Music service started"),
-        (err) => console.error("Failed to start music service:", err)
-    );
+    if (cordova.plugins.MusicService) {
+        // android
+        cordova.plugins.MusicService.start(
+            () => console.log("Music service started"),
+            (err) => console.error("Failed to start music service:", err)
+        );
+    }
 }
-
-
 
 // page links actions
 document.getElementById("donateRedirect").addEventListener("click",
