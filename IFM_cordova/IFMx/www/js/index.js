@@ -16,22 +16,11 @@ window.onload = function () {
 var cordova;
 
 function onDeviceReady() {
-    console.log("DEVICE IS READY!");
+    //console.log("DEVICE IS READY!");
     cordova.plugins.MusicService.start(
         () => console.log("Music service started"),
         (err) => console.error("Failed to start music service:", err)
     );
-
-    // lockscreen controls
-    this.cordova = cordova;
-    cordova.plugins.MusicService.setEventListener(function (event) {
-        if (event === "pause") {
-            console.log("lockscreen command PAUSE!");
-        } else if (event === "play") {
-            console.log("lockscreen command PLAY!");
-        }
-    });
-
 }
 
 

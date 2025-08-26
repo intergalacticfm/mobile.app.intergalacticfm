@@ -163,10 +163,10 @@ function setTrackMetadata(trackMetadata) {
                 nowPlayingMetadatas.album,
                 COVER_PATH_ARRAY[selectedChannel],
                 function (res) {
-                    console.log("OK", res);
+                    //console.log("OK", res);
                 },
                 function (err) {
-                    console.error("ERR", err);
+                    //console.error("ERR", err);
                 }
             );
             cordova.plugins.MusicService.setPlaying(true);
