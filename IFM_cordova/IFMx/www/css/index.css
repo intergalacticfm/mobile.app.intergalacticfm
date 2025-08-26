@@ -38,7 +38,6 @@ div {
     position: relative;
     overflow: hidden;
     margin: 1vw auto;
-    /* margini a sinistra e destra */
     background: black;
     color: red;
     border-radius: 12px;
@@ -102,6 +101,7 @@ div {
     display: table-cell;
     vertical-align: middle;
     width: 100%;
+    /* this set the max size of the channel button if the text is too large */
     max-height: 9em;
     color: white;
     background-color: black;
