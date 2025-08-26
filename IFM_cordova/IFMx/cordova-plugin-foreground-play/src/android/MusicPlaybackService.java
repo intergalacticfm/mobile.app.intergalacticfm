@@ -5,12 +5,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.AudioAttributes;
-import android.media.AudioFocusRequest;
-import android.media.AudioManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.media.MediaMetadataCompat;
@@ -28,7 +24,6 @@ public class MusicPlaybackService extends Service {
     private static final int NOTIF_ID = 1001;
 
     private MediaSessionCompat mediaSession;
-    private AudioManager audioManager;
 
     @Override
     public void onCreate() {
@@ -45,44 +40,16 @@ public class MusicPlaybackService extends Service {
         // Configura MediaSession
         mediaSession = new MediaSessionCompat(this, "MusicService");
         mediaSession.setActive(true);
-
-        // Configura AudioFocus
-        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        if (audioManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            AudioAttributes attrs = new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .build();
-
-            AudioFocusRequest request = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                    .setAudioAttributes(attrs)
-                    .setAcceptsDelayedFocusGain(true)
-                    .setOnAudioFocusChangeListener(focusChange -> {})
-                    .build();
-
-            audioManager.requestAudioFocus(request);
-        }
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-
-        // Notifica di base per restare in foreground
-        Notification notif = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(getApplicationInfo().icon)
-                .setContentTitle("Playing music")
-                .setOngoing(true)
-                .build();
-
-        startForeground(NOTIF_ID, notif);
-
+    public int onStartCommand(android.content.Intent intent, int flags, int startId) {
         if (intent != null && "ACTION_UPDATE_METADATA".equals(intent.getAction())) {
             String title = intent.getStringExtra("title");
             String artist = intent.getStringExtra("artist");
             String album = intent.getStringExtra("album");
-            String cover = "www/"+intent.getStringExtra("cover"); // es: "www/img/tdm128.png"
+            String cover = "www/" + intent.getStringExtra("cover");
 
-            // Carica cover da assets
             Bitmap coverBitmap = getBitmapFromAssets(cover);
 
             // Aggiorna metadati
@@ -105,7 +72,7 @@ public class MusicPlaybackService extends Service {
                     .build();
             mediaSession.setPlaybackState(state);
 
-            // Notifica con controlli media
+            // Notifica semplice con solo metadati
             Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setContentTitle(title)
                     .setContentText(artist)
@@ -113,13 +80,13 @@ public class MusicPlaybackService extends Service {
                     .setLargeIcon(coverBitmap)
                     .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                             .setMediaSession(mediaSession.getSessionToken()))
-                    .setOngoing(true)  // mantiene la notifica in foreground
+                    .setOngoing(true)
                     .build();
 
             startForeground(NOTIF_ID, notification);
         }
 
-        return START_STICKY; // mantiene vivo il service
+        return START_STICKY;
     }
 
     @Override
@@ -132,11 +99,10 @@ public class MusicPlaybackService extends Service {
 
     @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
+    public IBinder onBind(android.content.Intent intent) {
         return null;
     }
 
-    // Helper per caricare immagini da assets
     private Bitmap getBitmapFromAssets(String filePath) {
         if (filePath == null) return null;
         try (InputStream is = getAssets().open(filePath)) {
