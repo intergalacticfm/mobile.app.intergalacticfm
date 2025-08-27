@@ -36,15 +36,15 @@ Build process overview:
 ### Project Setup
 
 # Clone this repository
-git clone ##REPO_URL##
-cd cordova-music-app
+- git clone ##REPO_URL##
+- cd cordova-music-app
 
 # Install dependencies
 npm install
 
 # Add platforms
-cordova platform add android
-cordova platform add ios
+- cordova platform add android
+- cordova platform add ios
 
 # Add plugin (included in local path)
 cordova plugin add ./cordova-plugin-foreground-play
@@ -52,16 +52,16 @@ cordova plugin add ./cordova-plugin-foreground-play
 ### Building the App
 
 #### Android
-cordova prepare androir
-cordova build android
+- cordova prepare androir
+- cordova build android
 
 This:
 - Copies your web app from 'www/' into 'platforms/android/app/src/main/assets/www/'
 - Compiles Java sources (including 'MusicService' and 'MusicPlaybackService')
 
 #### iOS
-cordova prepare ios
-cordova build ios
+- cordova prepare ios
+- cordova build ios
 
 This:
 - Copies your web app into the iOS project structure
@@ -93,9 +93,9 @@ The Android app integrates a MusicPlaybackService via a Cordova plugin.
 - 'MusicPlaybackService.java': Foreground service managing media metadata, notifications, and lockscreen integration.
 - Metadata is updated by calling from JavaScript:
 
-cordova.plugins.MusicService.start();
-cordova.plugins.MusicService.updateMetadata("Song Title", "Artist", "Album", "cover.png");
-cordova.plugins.MusicService.setPlaying(true);
+- cordova.plugins.MusicService.start();
+- cordova.plugins.MusicService.updateMetadata("Song Title", "Artist", "Album", "cover.png");
+- cordova.plugins.MusicService.setPlaying(true);
 
 Assets for background metadata cover are retrieved from local, not from the web.
 
