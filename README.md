@@ -36,8 +36,8 @@ Build process overview:
 ### Project Setup
 
 # Clone this repository
-- git clone ##REPO_URL##
-- cd cordova-music-app
+- git clone https://github.com/intergalacticfm/mobile.app.intergalacticfm
+- cd mobile.app.intergalacticfm
 
 # Install dependencies
 npm install
