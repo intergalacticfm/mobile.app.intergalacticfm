@@ -4,7 +4,7 @@ const DISPLAY_MESSAGE_BOX_ID = 'messageBox';
 const DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=MV4HVU2D4W3LJ';
 const WEBSITE_URL = 'https://intergalactic.fm/';
 const ARCHIVE_URL = 'https://videohotmix.net/';
-const DEFAULT_SCROLLING_TEXT = 'INTERGALACTIC FM SPACE TRAVELS APP version 0.7-debug';
+const DEFAULT_SCROLLING_TEXT = 'INTERGALACTIC FM SPACE TRAVELS APP 1.0';
 const PLAYER_CBS_ID = 'playerCBS';
 const PLAYER_DF_ID = 'playerDF';
 const PLAYER_TDM_ID = 'playerTDM';
