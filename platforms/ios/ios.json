@@ -1,0 +1,39 @@
+{
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {
+      "config.xml": {
+        "parents": {
+          "/*": []
+        }
+      },
+      "*-Info.plist": {
+        "parents": {
+          "UIBackgroundModes": []
+        }
+      }
+    }
+  },
+  "installed_plugins": {
+    "cordova-plugin-foreground-play": {
+      "PACKAGE_NAME": "fm.intergalactic"
+    }
+  },
+  "dependent_plugins": {},
+  "modules": [
+    {
+      "id": "cordova-plugin-foreground-play.MusicService",
+      "file": "plugins/cordova-plugin-foreground-play/www/music-service.js",
+      "pluginId": "cordova-plugin-foreground-play",
+      "clobbers": [
+        "cordova.plugins.MusicService"
+      ]
+    }
+  ],
+  "plugin_metadata": {
+    "cordova-plugin-foreground-play": "1.0.0"
+  }
+}

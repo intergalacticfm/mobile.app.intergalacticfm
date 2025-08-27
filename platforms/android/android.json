@@ -1,0 +1,67 @@
+{
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {
+      "AndroidManifest.xml": {
+        "parents": {
+          "/manifest": [
+            {
+              "xml": "<uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />",
+              "count": 1
+            },
+            {
+              "xml": "<uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK\" />",
+              "count": 1
+            },
+            {
+              "xml": "<uses-permission android:name=\"android.permission.WAKE_LOCK\" />",
+              "count": 1
+            },
+            {
+              "xml": "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" />",
+              "count": 1
+            }
+          ],
+          "/manifest/application": [
+            {
+              "xml": "<service android:enabled=\"true\" android:exported=\"false\" android:foregroundServiceType=\"mediaPlayback\" android:name=\"fm.intergalactic.MusicPlaybackService\" />",
+              "count": 1
+            }
+          ]
+        }
+      },
+      "res/xml/config.xml": {
+        "parents": {
+          "/*": [
+            {
+              "xml": "<feature name=\"MusicService\"><param name=\"android-package\" value=\"fm.intergalactic.MusicService\" /></feature>",
+              "count": 1
+            }
+          ]
+        }
+      }
+    }
+  },
+  "installed_plugins": {
+    "cordova-plugin-foreground-play": {
+      "PACKAGE_NAME": "fm.intergalactic"
+    }
+  },
+  "dependent_plugins": {},
+  "modules": [
+    {
+      "id": "cordova-plugin-foreground-play.MusicService",
+      "file": "plugins/cordova-plugin-foreground-play/www/music-service.js",
+      "pluginId": "cordova-plugin-foreground-play",
+      "clobbers": [
+        "cordova.plugins.MusicService"
+      ]
+    }
+  ],
+  "plugin_metadata": {
+    "cordova-plugin-foreground-play": "1.0.0"
+  }
+}
