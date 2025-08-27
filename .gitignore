@@ -1,0 +1,14 @@
+# Cordova build artifacts
+platforms/
+plugins/
+node_modules/
+
+# Sensitive files
+build.json
+*.keystore
+*.jks
+
+# OS / Editor stuff
+.DS_Store
+.idea/
+.vscode/
