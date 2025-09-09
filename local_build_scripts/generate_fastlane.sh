@@ -24,6 +24,6 @@ mkdir -p $DST/images/
 convert archive/icon-logo.png -resize 512x512\! $DST/images/icon.png
 cp -f archive/googleplayfeature.png $DST/images/featureGraphic.png
 
-#TODO mkdir -p $DST/images/phoneScreenshots/
+mkdir -p $DST/images/phoneScreenshots/
+cp -f archive/android/phone/* $DST/images/phoneScreenshots/
 
-#TODO mkdir -p $DST/images/tenInchScreenshots/
