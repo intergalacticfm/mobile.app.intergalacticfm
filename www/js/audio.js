@@ -29,7 +29,7 @@ document.getElementById(STOP_BUTTON_ID).addEventListener("click", function () {
 /* stop the audio player */
 function stop() {
     AUDIO_PLAYER.src = '';
-    if (cordova) {
+    if (cordova && cordova.plugins.MusicService != null) {
         /* android plugin receives the playback state */
         cordova.plugins.MusicService.setPlaying(false);
     }
@@ -103,7 +103,7 @@ async function getNowPlaying() {
                 var newTrack = trackMetadata.title;
                 previousTrackTitle = newTrack;
                 feedNowPlaying(newTrack);
-                extractCoverFromChannelContent();
+                extractCoverFromChannelContent(0);
             }
         }
         // restart the timer for polling the now playing api

@@ -12,3 +12,6 @@ build.json
 .DS_Store
 .idea/
 .vscode/
+res/screen/.DS_Store
+www/.DS_Store
+res/icon/.DS_Store
