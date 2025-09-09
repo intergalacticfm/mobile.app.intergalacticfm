@@ -62,8 +62,7 @@ function playChannel(channelNumber) {
     } catch (error) {
         var errorMessage =
             "Error while loading " + channelTitle + ": " + error;
-        console.log(errorMessage);
-        //alert("Error while loading " + channelTitle + ": " + error);
+        //console.log(errorMessage);
         reset();
         displayMessage(errorMessage);
     }
