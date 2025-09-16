@@ -99,6 +99,3 @@ The Android app integrates a MusicPlaybackService via a Cordova plugin.
 
 Assets for background metadata cover are retrieved from local, not from the web.
 
-## License
-MIT
-
