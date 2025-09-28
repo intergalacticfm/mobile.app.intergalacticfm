@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
@@ -24,26 +25,38 @@ public class MusicPlaybackService extends Service {
     private static final int NOTIF_ID = 1001;
 
     private MediaSessionCompat mediaSession;
+    private NotificationManager notificationManager;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        // Creazione canale notifiche per Android O+
-        if (Build.VERSION.SDK_INT >= 26) {
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Android notification channel creation
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel ch = new NotificationChannel(
                     CHANNEL_ID, "Music playback", NotificationManager.IMPORTANCE_LOW);
-            NotificationManager nm = getSystemService(NotificationManager.class);
-            if (nm != null) nm.createNotificationChannel(ch);
+            if (notificationManager != null) notificationManager.createNotificationChannel(ch);
         }
 
-        // Configura MediaSession
+        // MediaSession configuration
         mediaSession = new MediaSessionCompat(this, "MusicService");
         mediaSession.setActive(true);
+
+        // Show basic notification to avoid inactivity crash
+        Notification initialNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Music Service")
+                .setContentText("Starting…")
+                .setSmallIcon(getApplicationInfo().icon)
+                .setOngoing(true)
+                .build();
+
+        startForeground(NOTIF_ID, initialNotification);
     }
 
     @Override
-    public int onStartCommand(android.content.Intent intent, int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && "ACTION_UPDATE_METADATA".equals(intent.getAction())) {
             String title = intent.getStringExtra("title");
             String artist = intent.getStringExtra("artist");
@@ -52,7 +65,7 @@ public class MusicPlaybackService extends Service {
 
             Bitmap coverBitmap = getBitmapFromAssets(cover);
 
-            // Aggiorna metadati
+            // Metadata update
             MediaMetadataCompat.Builder metaBuilder = new MediaMetadataCompat.Builder()
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
                     .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
@@ -64,7 +77,7 @@ public class MusicPlaybackService extends Service {
 
             mediaSession.setMetadata(metaBuilder.build());
 
-            // Stato playback
+            // Playback state
             PlaybackStateCompat state = new PlaybackStateCompat.Builder()
                     .setState(PlaybackStateCompat.STATE_PLAYING,
                             PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN,
@@ -72,8 +85,8 @@ public class MusicPlaybackService extends Service {
                     .build();
             mediaSession.setPlaybackState(state);
 
-            // Notifica semplice con solo metadati
-            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+            // Notification update
+            Notification updatedNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setContentTitle(title)
                     .setContentText(artist)
                     .setSmallIcon(getApplicationInfo().icon)
@@ -83,7 +96,9 @@ public class MusicPlaybackService extends Service {
                     .setOngoing(true)
                     .build();
 
-            startForeground(NOTIF_ID, notification);
+            if (notificationManager != null) {
+                notificationManager.notify(NOTIF_ID, updatedNotification);
+            }
         }
 
         return START_STICKY;
@@ -99,7 +114,7 @@ public class MusicPlaybackService extends Service {
 
     @Nullable
     @Override
-    public IBinder onBind(android.content.Intent intent) {
+    public IBinder onBind(Intent intent) {
         return null;
     }
 
