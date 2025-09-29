@@ -5,7 +5,9 @@ window.onload = function () {
     if (!fetchedStations) {
         fetchStations();
     }
+
     setScrollingText(DEFAULT_SCROLLING_TEXT);
+    refreshScrollingTextAnimation();
     // unlock iOS audio context
     if (!audioContext) {
         audioContext = new(window.AudioContext || window.webkitAudioContext)();
@@ -87,6 +89,13 @@ async function fetchStations() {
 /* the rolling text right after the ifm logo, set as default in constants.DEFAULT_SCROLLING_TEXT */
 function setScrollingText(textForScrolling) {
     document.getElementsByClassName("ifmxScrollText")[0].innerHTML = textForScrolling;
+}
+
+function refreshScrollingTextAnimation() {
+    const el = document.querySelector(".ifmxScrollText");
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = "";
 }
 
 /* set the message displayed after the channels */

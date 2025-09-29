@@ -50,6 +50,10 @@ div {
     display: inline-block;
     white-space: nowrap;
     animation: scroll 10s linear infinite;
+    /* force compositing layer */
+    will-change: transform;
+    /* workaround for WebKit bug */
+    transform: translateZ(0);
 }
 
 @keyframes scroll {
