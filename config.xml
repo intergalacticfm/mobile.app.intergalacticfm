@@ -6,6 +6,8 @@
         IFM exploited Dev Team
     </author>
     <content src="index.html" />
+    <access origin="*" />
+    <allow-navigation href="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <preference name="AllowInlineMediaPlayback" value="true" />
@@ -56,12 +58,16 @@
         <preference name="SplashShowOnlyFirstTime" value="true" />
         <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/screen/android/splash-square.png" />
         <preference name="AndroidWindowSplashScreenBackground" value="#000000" />
+        <preference name="MixedContentMode" value="0" />
         <icon density="ldpi" src="res/icon/android/ldpi.png" />
         <icon density="mdpi" src="res/icon/android/mdpi.png" />
         <icon density="hdpi" src="res/icon/android/hdpi.png" />
         <icon density="xhdpi" src="res/icon/android/xhdpi.png" />
         <icon density="xxhdpi" src="res/icon/android/xxhdpi.png" />
         <icon density="xxxhdpi" src="res/icon/android/xxxhdpi.png" />
+        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config>
     </platform>
     <hook type="after_platform_add" src="scripts/fix-cordovalib-deployment.js" />
     <hook type="after_prepare" src="scripts/fix-cordovalib-deployment.js" />
