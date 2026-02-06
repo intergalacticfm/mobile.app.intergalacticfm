@@ -223,7 +223,8 @@ function feedNowPlaying(nowPlayingMetadata) {
         (nowPlayingMetadatas.year !== '' ? ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.year : EMPTY_VAL) +
         (nowPlayingMetadatas.country !== '' ? " , " + nowPlayingMetadatas.country : EMPTY_VAL);
     // ARTIST - title 
-    feedHTML(NOW_PLAYING_DIV_ID, main);
+    var fixedMain = formatTitleCase(main);
+    feedHTML(NOW_PLAYING_DIV_ID, fixedMain);
     // ALBUM - YEAR, COUNTRY
     feedHTML(NOW_PLAYING_DIV_EXT_ID, otherInfo);
     // COVER
@@ -241,6 +242,14 @@ function feedNowPlaying(nowPlayingMetadata) {
         showElement(homeContainer);
     }
 
+}
+/* requested by the imperious leader: artist name should be formatted Titlecase */
+function formatTitleCase(string) {
+    if (!string) return "";
+    string = string.toLowerCase();
+    return string.split(' ').map(word => {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    }).join(' ');
 }
 
 /* build the html for the cover artwork */

@@ -18,7 +18,7 @@
     <preference name="AndroidWindowSplashScreenBackground" value="#000000" />
 
     <platform name="ios">
-        <preference name="deployment-target" value="12.0" />
+        <preference name="deployment-target" value="13.0" />
         <!-- Code signing -->
         <preference name="developmentTeam" value="YOUR_TEAM_ID_HERE" />
         <preference name="CodeSignIdentity" value="IFM iOS dev team" />
