@@ -14,13 +14,13 @@
     "license": "Apache-2.0",
     "devDependencies": {
         "cordova-android": "^14.0.1",
-        "cordova-ios": "^7.1.1",
+        "cordova-ios": "^8.0.0",
         "cordova-plugin-foreground-play": "file:cordova-plugin-foreground-play"
     },
     "cordova": {
         "platforms": [
-            "ios",
-            "android"
+            "android",
+            "ios"
         ],
         "plugins": {
             "cordova-plugin-foreground-play": {}
