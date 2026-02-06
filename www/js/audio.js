@@ -2,7 +2,7 @@ var currentNowPlayingUrl;
 var nowPlayingRequestTimer;
 var selectedChannel;
 var stations;
-var previousTrackTitle = EMPTY_VAL;
+var previousTrackHash = EMPTY_VAL;
 var previousExtractedCoverHTML = EMPTY_VAL;
 
 
@@ -96,13 +96,13 @@ async function getNowPlaying() {
         const trackMetadata = await response.json();
         if (trackMetadata) {
             // avoid nullpointer if api is down
-            if (previousTrackTitle != trackMetadata.title) {
+            var metaDataHash = trackMetadata.title + trackMetadata.image_file;
+            if (previousTrackHash != metaDataHash) {
                 /* if we have a new track, by comparing the attribute title, we update the metadatas */
                 setTrackMetadata(trackMetadata);
-                var newTrack = trackMetadata.title;
-                previousTrackTitle = newTrack;
-                feedNowPlaying(newTrack);
-                extractCoverFromChannelContent(0);
+                var newTrack = metaDataHash;
+                previousTrackHash = newTrack;
+                feedNowPlaying(trackMetadata);
             }
         }
         // restart the timer for polling the now playing api
@@ -124,7 +124,8 @@ var nowPlayingMetadatas = {
     "label": "",
     "year": "",
     "country": "",
-    "ifmxLog": ""
+    "ifmxLog": "",
+    "artwork_url": ""
 }
 // example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
 /* this function parse the response of the now playing metadata from IFM server */
@@ -152,6 +153,7 @@ function setTrackMetadata(trackMetadata) {
         nowPlayingMetadatas.label = label;
         nowPlayingMetadatas.year = year;
         nowPlayingMetadatas.country = country;
+        nowPlayingMetadatas.artwork_url = trackMetadata.image_file;
         // we put the extra info of the now playing in the scrolling text so IFMx can say what he wants when he wants
         setScrollingText(ifmxLog);
         var coverPath = COVER_PATH_ARRAY[selectedChannel];
@@ -213,8 +215,8 @@ function setLockscreenTrackCommands() {
 }
 
 /* populate the now playing modal with track info and cover */
-function feedNowPlaying(title) {
-
+function feedNowPlaying(nowPlayingMetadata) {
+    var title = nowPlayingMetadata.title;
     var fields = title.split(META_TAGS_SPLIT_CHAR);
     var main = nowPlayingMetadatas.artist + ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.title;
     var otherInfo = (nowPlayingMetadatas.album !== '' ? nowPlayingMetadatas.album : EMPTY_VAL) +
@@ -224,6 +226,8 @@ function feedNowPlaying(title) {
     feedHTML(NOW_PLAYING_DIV_ID, main);
     // ALBUM - YEAR, COUNTRY
     feedHTML(NOW_PLAYING_DIV_EXT_ID, otherInfo);
+    // COVER
+    feedHTML(NOW_PLAYING_COVER_DIV_ID, getCoverHTMLfromUrl(nowPlayingMetadata.image_file));
 
     var modal = document.getElementById("trackInfoModal");
     var homeContainer = document.getElementById('container');
@@ -239,45 +243,18 @@ function feedNowPlaying(title) {
 
 }
 
-/* cover image is fetched from IFM server (constants.NOW_PLAYING_PICTURE_REQUEST_PREFIX) as pure HTML, so we need parsing to extract just the image we need to display */
-async function extractCoverFromChannelContent(attempt) {
-    if (attempt >= 10) {
-        // recursion guard to avoid infinite loops
-        return;
-    }
-    var requestUrl = NOW_PLAYING_PICTURE_REQUEST_PREFIX + (selectedChannel + 1);
-    var response = await fetch(requestUrl);
-    var body = await response.text();
-    var extractedCoverHTML = extractCoverFromHTML(body);
-    if (extractedCoverHTML != previousExtractedCoverHTML) {
-        // if previous known cover is different than the new one, we have the updated cover for the playing track */
-        previousExtractedCoverHTML = extractedCoverHTML;
-        // clean IFM inherited website styling and replace blanco img on error with local one
-        var extractedCleanCoverHTML = extractedCoverHTML.replace('class="mr-3 air-time-image"', '').replace('https://www.intergalactic.fm/sites/default/files/covers/blanco.png', 'img/blanco.png').replace('this.onerror=null;', '').replace('style="object-fit: scale-down"', '').replace('width="100"', 'width="90%"').replace('height="100"', 'height="90%"');
-        feedHTML(NOW_PLAYING_COVER_DIV_ID, extractedCleanCoverHTML);
-    } else {
-        //console.log("STILL OLD ARTWORK!");
-        /* main website updates the cover with some delay, so we might request it multiple times before getting the updated one */
-        //console.log("RETRYING...");
-        setTimeout(function () {
-            extractCoverFromChannelContent(attempt + 1);
-        }, 2000);
-
-    }
+/* build the html for the cover artwork */
+function getCoverHTMLfromUrl(image_url) {
+    return "<img src='" + image_url + "' style='width:90%'/>";
 }
 
-function extractCoverFromHTML(body) {
-    var startOfCoverImgIndex = body.indexOf('<img');
-    var endOfCoverImgIndex = body.indexOf('alt=""/>') + 10;
-    return body.substring(startOfCoverImgIndex, endOfCoverImgIndex);
-}
 /* reset the app to initial state */
 function reset() {
     feedHTML(NOW_PLAYING_DIV_ID, EMPTY_VAL);
     feedHTML(NOW_PLAYING_DIV_EXT_ID, EMPTY_VAL);
     feedHTML(NOW_PLAYING_COVER_DIV_ID, EMPTY_VAL);
     clearTimeout(nowPlayingRequestTimer);
-    previousTrackTitle = EMPTY_VAL;
+    previousTrackHash = EMPTY_VAL;
     previousExtractedCoverHTML = EMPTY_VAL;
     selectedChannel = EMPTY_VAL;
     document.title = PAGE_TITLE_DEFAULT;
