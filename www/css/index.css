@@ -1,7 +1,8 @@
 @font-face {
-    font-family: 'Michroma-Regular';
-    src: url('Michroma-Regular.ttf');
-    format('truetype');
+    font-family: 'Michroma';
+    src: url('../fonts/Michroma-Regular.woff2') format('woff2'),
+        url('../fonts/Michroma-Regular.woff') format('woff'),
+        url('../fonts/Michroma-Regular.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -11,17 +12,20 @@ html,
 body {
     background-color: black;
     color: white;
-    font-family: Michroma-Regular;
+    font-family: 'Michroma', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     margin: 0;
-    overflow: hidden;
-    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    letter-spacing: normal;
+
+    /* font rendering consistency */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     letter-spacing: 0.08em;
-    font-size: clamp(1rem, 0.5rem + 1vw, 2rem);
+    font-size: clamp(1rem, 0.9rem + 0.6vw, 1.6rem);
 }
 
 div {
@@ -69,6 +73,12 @@ div {
     -webkit-backface-visibility: hidden;
 }
 
+.channelNameTd,
+.scrollTextContainer,
+.links td {
+    letter-spacing: 0.06em;
+}
+
 @keyframes scroll {
     from {
         transform: translateX(100%);
@@ -114,8 +124,12 @@ div {
     max-height: 60%;
 }
 
+table {
+    font-family: 'Michroma';
+}
+
 .channel {
-    display: table-cell;
+    display: block;
     vertical-align: middle;
     width: 100%;
     /* this set the max size of the channel button if the text is too large */
@@ -123,7 +137,6 @@ div {
     color: white;
     background-color: black;
     border-radius: 0.4em;
-    font-family: Michroma-Regular;
 }
 
 .channelIcon {
@@ -175,7 +188,6 @@ div {
     /* Enable scroll if needed */
     background-color: black;
     justify-content: center;
-    font-family: Michroma-Regular;
     text-align: center;
 }
 
@@ -209,16 +221,14 @@ div {
     margin-left: 5%;
     margin-right: 5%;
     margin-top: 0%;
-    text-align: justify;
-    text-justify: inter-character;
+    text-align: left;
 }
 
 #nowPlayingExt {
     margin-left: 5%;
     margin-right: 5%;
     margin-top: 0%;
-    text-align: justify;
-    text-justify: inter-character;
+    text-align: left;
     font-size: clamp(0.9rem, 0.4rem + 1vw, 1.9rem);
 }
 
