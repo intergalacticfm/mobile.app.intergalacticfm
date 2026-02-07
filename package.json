@@ -13,6 +13,7 @@
     "author": "Apache Cordova Team",
     "license": "Apache-2.0",
     "devDependencies": {
+        "@globules-io/cordova-plugin-disable-font-scaling": "^1.0.3",
         "cordova-android": "^14.0.1",
         "cordova-ios": "^8.0.0",
         "cordova-plugin-foreground-play": "file:cordova-plugin-foreground-play"
@@ -25,5 +26,8 @@
         "plugins": {
             "cordova-plugin-foreground-play": {}
         }
+    },
+    "dependencies": {
+        "cordova-plugin-disable-text-zoom": "^1.0.2"
     }
 }

@@ -13,6 +13,10 @@ window.onload = function () {
         audioContext = new(window.AudioContext || window.webkitAudioContext)();
     }
     document.addEventListener("deviceready", onDeviceReady, false);
+    /* prevent all pinch-zoom actions */
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('gesturechange', e => e.preventDefault());
+    document.addEventListener('gestureend', e => e.preventDefault());
 };
 
 var cordova;

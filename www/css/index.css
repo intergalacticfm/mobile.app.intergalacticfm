@@ -13,11 +13,13 @@ body {
     background-color: black;
     color: white;
     font-family: 'Michroma', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    margin: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
+    overscroll-behavior: none;
     letter-spacing: normal;
-
+    margin: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: 100vh;
     /* font rendering consistency */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
@@ -25,13 +27,13 @@ body {
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     letter-spacing: 0.08em;
-    font-size: clamp(1rem, 0.9rem + 0.6vw, 1.6rem);
+    font-size: clamp(1rem, 0.9rem + 0.6vw, 1.5rem);
 }
 
-table,
-tr,
-td {
-    font-family: 'Michroma', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+button,
+input,
+textarea {
+    font-family: inherit;
 }
 
 div {
@@ -40,7 +42,7 @@ div {
 
 .header {
     background-color: black;
-    max-height: 20%;
+    height: 10vh;
     margin-top: 3vw;
     overflow: hidden;
     box-sizing: border-box;
@@ -62,9 +64,9 @@ div {
     background: black;
     color: red;
     border-radius: 12px;
-    max-height: 20%;
+    height: 5vh;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    font-size: clamp(0.8rem, 0.8rem + 1vw, 2rem);
+    font-size: var(--fs-sm);
 }
 
 .ifmxScrollText {
@@ -87,7 +89,6 @@ div {
     box-sizing: border-box;
 }
 
-.channelNameTd,
 .scrollTextContainer,
 .links td {
     letter-spacing: 0.06em;
@@ -118,7 +119,7 @@ div {
     position: relative;
     text-align: center;
     width: 100%;
-    max-height: 60%;
+    max-height: 50vh;
 }
 
 .channel:not(:active) {
@@ -132,10 +133,9 @@ div {
 
 .channels {
     box-sizing: border-box;
-    margin-top: 10vw;
     margin-left: 5vw;
     margin-right: 5vw;
-    max-height: 60%;
+    max-height: 50vh;
 }
 
 .channel {
@@ -146,15 +146,8 @@ div {
     padding: 0.8em;
     box-sizing: border-box;
     text-align: left;
-
     /* touch + iOS */
     -webkit-tap-highlight-color: transparent;
-}
-
-.channel table {
-    display: flex;
-    width: 100%;
-    border-collapse: collapse;
 }
 
 .channelIcon {
@@ -165,8 +158,8 @@ div {
 
 .channelName {
     font-family: 'Michroma', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: clamp(0.5rem, 0.5rem + 1vw, 2rem);
     line-height: 1.2;
+    font-size: 0.8rem;
 }
 
 #cbsChannelButton {
@@ -181,15 +174,12 @@ div {
     border-color: cornflowerblue;
 }
 
-#mtvChannelButton {
-    border-color: red;
-}
 
 #messageBox {
     box-sizing: border-box;
     margin: 1em;
     font-size: clamp(0.5rem, 0.5rem + 1vw, 2rem);
-    max-height: 25%;
+    max-height: 10vh;
 }
 
 /* The Modal (background) */
@@ -203,7 +193,7 @@ div {
     left: 0;
     width: 100%;
     /* Full width */
-    height: 70%;
+    height: 70vh;
     /* Enable scroll if needed */
     background-color: black;
     justify-content: center;
@@ -213,8 +203,8 @@ div {
 .links {
     box-sizing: border-box;
     margin: 10vw;
-    max-height: 25%;
-    font-size: clamp(0.5rem, 0.5rem + 1vw, 2rem);
+    max-height: 15vh;
+    font-size: clamp(0.5rem, 0.5rem + 0.5vw, 1.5rem);
 }
 
 /* Modal Content */
@@ -222,11 +212,18 @@ div {
 /* The Close Button */
 .close {
     color: red;
-    font-size: clamp(1.8rem, 1.3rem + 1.8vw, 2.8rem);
-    font-weight: bold;
+    font-size: clamp(2.2rem, 1.6rem + 2vw, 3.2rem);
+    font-weight: 600;
     background-color: black;
-    border-width: 0px;
-    max-height: 2em;
+    border: 0;
+
+    /* touch target iOS */
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.4em 0.6em;
+
+    line-height: 1;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .close:hover,
@@ -256,4 +253,15 @@ div {
     margin: 1em;
     text-align: center;
     max-height: 50%;
+}
+
+:root {
+    --fs-xs: clamp(0.5rem, 0.5rem + 1vw, 1.2rem);
+    --fs-sm: clamp(0.7rem, 0.6rem + 1vw, 1.5rem);
+    --fs-md: clamp(1rem, 0.8rem + 1vw, 2rem);
+    --fs-lg: clamp(1.3rem, 1rem + 1vw, 2.5rem);
+}
+
+* {
+    touch-action: manipulation;
 }

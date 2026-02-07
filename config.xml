@@ -49,6 +49,8 @@
         <splash src="res/screen/ios/Default@3x~iphone~comany.png" />
         <splash src="res/screen/ios/Default@2x~ipad~anyany.png" />
         <splash src="res/screen/ios/Default@2x~ipad~comany.png" />
+        <!-- other preferences -->
+        <preference name="Orientation" value="portrait" />
     </platform>
     <platform name="android">
         <preference name="android-minSdkVersion" value="23" />
@@ -59,6 +61,7 @@
         <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/screen/android/splash-square.png" />
         <preference name="AndroidWindowSplashScreenBackground" value="#000000" />
         <preference name="MixedContentMode" value="0" />
+        <preference name="Orientation" value="portrait" />
         <icon density="ldpi" src="res/icon/android/ldpi.png" />
         <icon density="mdpi" src="res/icon/android/mdpi.png" />
         <icon density="hdpi" src="res/icon/android/hdpi.png" />
