@@ -254,11 +254,13 @@ function formatTitleCase(string) {
 
 /* build the html for the cover artwork */
 function getCoverHTMLfromUrl(image_url) {
-    if (image_url === 'https://www.intergalactic.fm/sites/default/files/covers/') {
-        // if no image is present, use default one
-        image_url += "blanco.png";
-    }
-    return "<img src='" + image_url + "' style='width:90%' />";
+    return "<img src='" + image_url + "' style='width:90%' onerror=\"imgErrorManagement(this)\"/>";
+}
+
+function imgErrorManagement(source) {
+    source.src = "https://www.intergalactic.fm/sites/default/files/covers/blanco.png";
+    source.onerror = "";
+    return true;
 }
 
 /* reset the app to initial state */
