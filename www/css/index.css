@@ -28,6 +28,12 @@ body {
     font-size: clamp(1rem, 0.9rem + 0.6vw, 1.6rem);
 }
 
+table,
+tr,
+td {
+    font-family: 'Michroma', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
 div {
     max-width: 100%;
 }
@@ -71,6 +77,14 @@ div {
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+}
+
+.channelRow {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .channelNameTd,
@@ -124,31 +138,36 @@ div {
     max-height: 60%;
 }
 
-table {
-    font-family: 'Michroma';
-}
-
 .channel {
-    display: block;
-    vertical-align: middle;
     width: 100%;
-    /* this set the max size of the channel button if the text is too large */
-    max-height: 9em;
     color: white;
     background-color: black;
     border-radius: 0.4em;
+    padding: 0.8em;
+    box-sizing: border-box;
+    text-align: left;
+
+    /* touch + iOS */
+    -webkit-tap-highlight-color: transparent;
+}
+
+.channel table {
+    display: flex;
+    width: 100%;
+    border-collapse: collapse;
 }
 
 .channelIcon {
-    max-height: 3em;
+    height: 3em;
     width: auto;
+    flex-shrink: 0;
 }
 
-.channelNameTd {
-    text-align: left;
+.channelName {
+    font-family: 'Michroma', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: clamp(0.5rem, 0.5rem + 1vw, 2rem);
+    line-height: 1.2;
 }
-
 
 #cbsChannelButton {
     border-color: white;
