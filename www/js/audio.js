@@ -216,11 +216,10 @@ function setLockscreenTrackCommands() {
 
 /* populate the now playing modal with track info and cover */
 function feedNowPlaying(nowPlayingMetadata) {
-    var title = nowPlayingMetadata.title;
-    var fields = title.split(META_TAGS_SPLIT_CHAR);
     var main = nowPlayingMetadatas.artist + ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.title;
     var otherInfo = (nowPlayingMetadatas.album !== '' ? nowPlayingMetadatas.album : EMPTY_VAL) +
-        (nowPlayingMetadatas.year !== '' ? ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.year : EMPTY_VAL) +
+        (nowPlayingMetadatas.label !== '' ? ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.label : EMPTY_VAL) +
+        (nowPlayingMetadatas.year !== '' ? "<br>" + nowPlayingMetadatas.year : EMPTY_VAL) +
         (nowPlayingMetadatas.country !== '' ? " , " + nowPlayingMetadatas.country : EMPTY_VAL);
     // ARTIST - title 
     var fixedMain = formatTitleCase(main);
@@ -232,12 +231,14 @@ function feedNowPlaying(nowPlayingMetadata) {
 
     var modal = document.getElementById("trackInfoModal");
     var homeContainer = document.getElementById('container');
-    var btn = document.getElementById("myBtn");
     var span = document.getElementsByClassName("close")[0];
     hideElement(homeContainer);
     showElement(modal);
+    var closeButton = document.getElementById("stopButton");
+    showElement(closeButton);
     // When the user clicks on "back button" (↵), close the modal
     span.onclick = function () {
+        hideElement(closeButton);
         hideElement(modal);
         showElement(homeContainer);
     }
