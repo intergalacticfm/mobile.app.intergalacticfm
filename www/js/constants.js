@@ -50,3 +50,4 @@ const PAUSE_ACTION_NAME = 'pause';
 const STOP_ACTION_NAME = 'stop';
 const SEEK_FORWARD_ACTION_NAME = 'seekforward';
 const SEEK_BACKWARD_ACTION_NAME = 'seekbackward';
+const DEFAULT_IMAGE_NOT_FOUND = 'https://www.intergalactic.fm/sites/default/files/covers/blanco.png';

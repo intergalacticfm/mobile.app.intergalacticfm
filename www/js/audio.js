@@ -62,7 +62,7 @@ function playChannel(channelNumber) {
     } catch (error) {
         var errorMessage =
             "Error while loading " + channelTitle + ": " + error;
-        //console.log(errorMessage);
+        console.log(errorMessage);
         reset();
         displayMessage(errorMessage);
     }
@@ -91,29 +91,36 @@ function addAudioEventListeners(audioPlayer) {
 
 /* request now playing from IFM server every constants.NOW_PLAYING_REQUEST_TIMEOUT_MSEC */
 async function getNowPlaying() {
+    let trackMetadata;
     try {
         const response = await fetch(currentNowPlayingUrl);
-        const trackMetadata = await response.json();
-        if (trackMetadata) {
-            // avoid nullpointer if api is down
-            var metaDataHash = trackMetadata.title + trackMetadata.image_file;
-            if (previousTrackHash != metaDataHash) {
-                /* if we have a new track, by comparing the attribute title, we update the metadatas */
-                setTrackMetadata(trackMetadata);
-                var newTrack = metaDataHash;
-                previousTrackHash = newTrack;
-                feedNowPlaying(trackMetadata);
-            }
+        if (!response.ok) {
+            trackMetadata = setDefaultNowPlayingInfo();
+        } else {
+            trackMetadata = await response.json();
         }
-        // restart the timer for polling the now playing api
-        nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
     } catch (error) {
-        //alert("NOW PLAYIN ERROR: " + error);
-        var errorMessage = "Error while fetching nowPlaying API: " + error;
-        //console.log(errorMessage);
-        reset();
-        displayMessage(errorMessage);
+        console.warn("NowPlaying API error:", error);
+        trackMetadata = setDefaultNowPlayingInfo();
     }
+
+    var metaDataHash = trackMetadata.title + trackMetadata.image_file;
+    if (previousTrackHash != metaDataHash) {
+        /* if we have a new track, by comparing the attribute title, we update the metadatas */
+        setTrackMetadata(trackMetadata);
+        var newTrack = metaDataHash;
+        previousTrackHash = newTrack;
+        feedNowPlaying(trackMetadata);
+    }
+    // restart the timer for polling the now playing api
+    nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
+}
+
+function setDefaultNowPlayingInfo() {
+    return {
+        "title": "Error - No info received from Mothership.",
+        "image_file": DEFAULT_IMAGE_NOT_FOUND
+    };
 }
 
 /* init the object metadatas, used to display music info */
@@ -259,7 +266,7 @@ function getCoverHTMLfromUrl(image_url) {
 }
 
 function imgErrorManagement(source) {
-    source.src = "https://www.intergalactic.fm/sites/default/files/covers/blanco.png";
+    source.src = DEFAULT_IMAGE_NOT_FOUND;
     source.onerror = "";
     return true;
 }
