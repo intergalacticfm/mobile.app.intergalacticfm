@@ -26,7 +26,7 @@ this function is for using the android plugin, cordova libraries will not be ava
 */
 function onDeviceReady() {
     //console.log("DEVICE IS READY!");
-    if (cordova.plugins.MusicService) {
+    if (isAndroidMusicServiceAvailable()) {
         // android
         cordova.plugins.MusicService.start(
             () => console.log("Music service started"),
@@ -38,6 +38,16 @@ function onDeviceReady() {
             stopButtonAction();
         }, false);
     }
+}
+
+function isAndroidMusicServiceAvailable() {
+    return (
+        window.cordova &&
+        cordova.platformId === "android" &&
+        cordova.plugins &&
+        cordova.plugins.MusicService &&
+        typeof cordova.plugins.MusicService.setPlaying === "function"
+    );
 }
 
 // page links actions

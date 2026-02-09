@@ -32,7 +32,7 @@ document.getElementById(STOP_BUTTON_ID).addEventListener(CLICK_EVENT_NAME, funct
 /* stop the audio player */
 function stop() {
     AUDIO_PLAYER.src = '';
-    if (cordova && cordova.plugins.MusicService != null) {
+    if (isAndroidMusicServiceAvailable()) {
         /* android plugin receives the playback state */
         cordova.plugins.MusicService.setPlaying(false);
     }
@@ -188,7 +188,7 @@ function setTrackMetadata(trackMetadata) {
                 }]
             });
         }
-        if (cordova && cordova.plugins.MusicService) {
+        if (isAndroidMusicServiceAvailable()) {
             // Android metadata update
             cordova.plugins.MusicService.updateMetadata(
                 nowPlayingMetadatas.title,
