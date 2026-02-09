@@ -98,6 +98,7 @@ async function getNowPlaying() {
             trackMetadata = setDefaultNowPlayingInfo();
         } else {
             trackMetadata = await response.json();
+            trackMetadata.title = fixEncoding(trackMetadata.title);
         }
     } catch (error) {
         console.warn("NowPlaying API error:", error);
@@ -116,6 +117,15 @@ async function getNowPlaying() {
     nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
 }
 
+/* some titles arrives in non-UTF8 format, so needs a forcing decoding */
+function fixEncoding(str) {
+    try {
+        return decodeURIComponent(escape(str));
+    } catch (e) {
+        return str;
+    }
+}
+/* in case there is no info on playing track, we show default value instead of crashing */
 function setDefaultNowPlayingInfo() {
     return {
         "title": "Error - No info received from Mothership.",
