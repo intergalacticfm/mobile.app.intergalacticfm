@@ -7,21 +7,24 @@ var previousExtractedCoverHTML = EMPTY_VAL;
 
 
 /* bing the channel buttons to the playChannel function */
-document.getElementById("cbsChannelButton").addEventListener("click",
+document.getElementById(CBS_BUTTON_ID).addEventListener(CLICK_EVENT_NAME,
     function () {
+        document.getElementById(CBS_BUTTON_ID).classList.add(IS_DISABLED_CSS_CLASS);
         playChannel(0);
     });
-document.getElementById("dfChannelButton").addEventListener("click",
+document.getElementById(DF_BUTTON_ID).addEventListener(CLICK_EVENT_NAME,
     function () {
+        document.getElementById(DF_BUTTON_ID).classList.add(IS_DISABLED_CSS_CLASS);
         playChannel(1);
     });
-document.getElementById("tdmChannelButton").addEventListener("click",
+document.getElementById(TDM_BUTTON_ID).addEventListener(CLICK_EVENT_NAME,
     function () {
+        document.getElementById(TDM_BUTTON_ID).classList.add(IS_DISABLED_CSS_CLASS);
         playChannel(2);
     });
 
 /* bing the stop button to stop music from playing */
-document.getElementById(STOP_BUTTON_ID).addEventListener("click", function () {
+document.getElementById(STOP_BUTTON_ID).addEventListener(CLICK_EVENT_NAME, function () {
     stop();
     reset();
 });
@@ -71,7 +74,7 @@ function playChannel(channelNumber) {
 
 /* iOS and browsers receive event listeners from media session object, not android */
 function addAudioEventListeners(audioPlayer) {
-    if ("mediaSession" in navigator) {
+    if (MEDIASESSION_NAME in navigator) {
         audioPlayer.addEventListener(PLAY_ACTION_NAME, () => {
             navigator.mediaSession.playbackState = 'playing';
         });
@@ -153,7 +156,7 @@ function setTrackMetadata(trackMetadata) {
         var manydash = (trackMetadatas[0].match(/-/g) || []).length != 1;
         var artist_title = trackMetadatas[0];
         var artist = artist_title;
-        var title = "";
+        var title = EMPTY_VAL;
         if (notCorrupted && !manydash) {
             artist = artist_title.split(ARTIST_TITLE_SPLIT_STRING)[0].trim();
             title = artist_title.split(ARTIST_TITLE_SPLIT_STRING)[1].trim();
@@ -174,7 +177,7 @@ function setTrackMetadata(trackMetadata) {
         // we put the extra info of the now playing in the scrolling text so IFMx can say what he wants when he wants
         setScrollingText(ifmxLog);
         var coverPath = COVER_PATH_ARRAY[selectedChannel];
-        if ("mediaSession" in navigator) {
+        if (MEDIASESSION_NAME in navigator) {
             // iOS metadata update
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: title,
@@ -201,7 +204,7 @@ function setTrackMetadata(trackMetadata) {
 
 function setLockscreenTrackCommands() {
     /* iOS lockscreen commands for next, prev track */
-    if ("mediaSession" in navigator) {
+    if (MEDIASESSION_NAME in navigator) {
         /* if channel is the first, we only move forward. if channel is last we only move backward */
         var previousIndex = selectedChannel == 0 ? 2 : (selectedChannel - 1);
         var nextIndex = selectedChannel == 2 ? 0 : (selectedChannel + 1);
@@ -234,10 +237,10 @@ function setLockscreenTrackCommands() {
 /* populate the now playing modal with track info and cover */
 function feedNowPlaying(nowPlayingMetadata) {
     var main = nowPlayingMetadatas.artist + ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.title;
-    var otherInfo = (nowPlayingMetadatas.album !== '' ? nowPlayingMetadatas.album : EMPTY_VAL) +
-        (nowPlayingMetadatas.label !== '' ? ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.label : EMPTY_VAL) +
-        (nowPlayingMetadatas.year !== '' ? "<br>" + nowPlayingMetadatas.year : EMPTY_VAL) +
-        (nowPlayingMetadatas.country !== '' ? " , " + nowPlayingMetadatas.country : EMPTY_VAL);
+    var otherInfo = (nowPlayingMetadatas.album !== EMPTY_VAL ? nowPlayingMetadatas.album : EMPTY_VAL) +
+        (nowPlayingMetadatas.label !== EMPTY_VAL ? ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.label : EMPTY_VAL) +
+        (nowPlayingMetadatas.year !== EMPTY_VAL ? LINE_BREAK + nowPlayingMetadatas.year : EMPTY_VAL) +
+        (nowPlayingMetadatas.country !== EMPTY_VAL ? " , " + nowPlayingMetadatas.country : EMPTY_VAL);
     // ARTIST - title 
     var fixedMain = formatTitleCase(main);
     feedHTML(NOW_PLAYING_DIV_ID, fixedMain);
@@ -246,28 +249,25 @@ function feedNowPlaying(nowPlayingMetadata) {
     // COVER
     feedHTML(NOW_PLAYING_COVER_DIV_ID, getCoverHTMLfromUrl(nowPlayingMetadata.image_file));
 
-    var modal = document.getElementById("trackInfoModal");
-    var homeContainer = document.getElementById('container');
-    var span = document.getElementsByClassName("close")[0];
+    var modal = document.getElementById(TRACK_INFO_MODAL_ID);
+    var homeContainer = document.getElementById(CONTAINER_ID);
+    var stopButton = document.getElementsByClassName(CLOSE)[0];
     hideElement(homeContainer);
     showElement(modal);
-    var closeButton = document.getElementById("stopButton");
-    showElement(closeButton);
-    // When the user clicks on "back button" (↵), close the modal
-    span.onclick = function () {
-        hideElement(closeButton);
-        hideElement(modal);
-        showElement(homeContainer);
-    }
+    showElement(stopButton);
+}
 
+function stopButtonAction() {
+    stop();
+    reset();
 }
 /* requested by the imperious leader: artist name should be formatted Titlecase */
 function formatTitleCase(string) {
-    if (!string) return "";
+    if (!string) return EMPTY_VAL;
     string = string.toLowerCase();
-    return string.split(' ').map(word => {
+    return string.split(SPACE).map(word => {
         return word.charAt(0).toUpperCase() + word.slice(1);
-    }).join(' ');
+    }).join(SPACE);
 }
 
 /* build the html for the cover artwork */
@@ -277,7 +277,7 @@ function getCoverHTMLfromUrl(image_url) {
 
 function imgErrorManagement(source) {
     source.src = DEFAULT_IMAGE_NOT_FOUND;
-    source.onerror = "";
+    source.onerror = EMPTY_VAL;
     return true;
 }
 
@@ -291,10 +291,12 @@ function reset() {
     previousExtractedCoverHTML = EMPTY_VAL;
     selectedChannel = EMPTY_VAL;
     document.title = PAGE_TITLE_DEFAULT;
-    var modal = document.getElementById("trackInfoModal");
-    var homeContainer = document.getElementById('container');
-    hideElement(modal);
+    hideElement(document.getElementsByClassName(CLOSE)[0]);
+    hideElement(document.getElementById(TRACK_INFO_MODAL_ID));
     fetchStations();
-    showElement(homeContainer);
+    showElement(document.getElementById(CONTAINER_ID));
     setScrollingText(DEFAULT_SCROLLING_TEXT);
+    document.getElementById(CBS_BUTTON_ID).classList.remove(IS_DISABLED_CSS_CLASS);
+    document.getElementById(DF_BUTTON_ID).classList.remove(IS_DISABLED_CSS_CLASS);
+    document.getElementById(TDM_BUTTON_ID).classList.remove(IS_DISABLED_CSS_CLASS);
 }

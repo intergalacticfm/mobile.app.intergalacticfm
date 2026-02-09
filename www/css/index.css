@@ -36,6 +36,11 @@ textarea {
     font-family: inherit;
 }
 
+button.is-disabled {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
 div {
     max-width: 100%;
 }

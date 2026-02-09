@@ -12,7 +12,7 @@ window.onload = function () {
     if (!audioContext) {
         audioContext = new(window.AudioContext || window.webkitAudioContext)();
     }
-    document.addEventListener("deviceready", onDeviceReady, false);
+    document.addEventListener(DEVICE_READY_EVENT_NAME, onDeviceReady, false);
     /* prevent all pinch-zoom actions */
     document.addEventListener('gesturestart', e => e.preventDefault());
     document.addEventListener('gesturechange', e => e.preventDefault());
@@ -32,21 +32,26 @@ function onDeviceReady() {
             () => console.log("Music service started"),
             (err) => console.error("Failed to start music service:", err)
         );
+        // android menu backbutton to behave like the app backbutton
+        document.addEventListener("backbutton", (e) => {
+            e.preventDefault();
+            stopButtonAction();
+        }, false);
     }
 }
 
 // page links actions
-document.getElementById("donateRedirect").addEventListener("click",
+document.getElementById("donateRedirect").addEventListener(CLICK_EVENT_NAME,
     function () {
         window.location.href = DONATE_URL;
     });
 
-document.getElementById("websiteRedirect").addEventListener("click",
+document.getElementById("websiteRedirect").addEventListener(CLICK_EVENT_NAME,
     function () {
         window.location.href = WEBSITE_URL;
     });
 
-document.getElementById("archiveRedirect").addEventListener("click",
+document.getElementById("archiveRedirect").addEventListener(CLICK_EVENT_NAME,
     function () {
         window.location.href = ARCHIVE_URL;
     });
@@ -87,7 +92,7 @@ async function fetchStations() {
                 ];
 
     // playlist loaded successfuly
-    displayMessage("System ready.<br> Select a channel to play.");
+    displayMessage(SYSTEM_READY_MSG);
 }
 
 /* the rolling text right after the ifm logo, set as default in constants.DEFAULT_SCROLLING_TEXT */
@@ -97,9 +102,9 @@ function setScrollingText(textForScrolling) {
 
 function refreshScrollingTextAnimation() {
     const el = document.querySelector(".ifmxScrollText");
-    el.style.animation = "none";
+    el.style.animation = NONE;
     void el.offsetWidth;
-    el.style.animation = "";
+    el.style.animation = EMPTY_VAL;
 }
 
 /* set the message displayed after the channels */
@@ -113,9 +118,9 @@ function feedHTML(elementId, value) {
 }
 /* utility function for showing an element in html, used for the "now playing" modal */
 function showElement(element) {
-    element.style.display = "block";
+    element.style.display = BLOCK;
 }
 /* utility function for hiding an element in html, used for the "now playing" modal */
 function hideElement(element) {
-    element.style.display = "none";
+    element.style.display = NONE;
 }
