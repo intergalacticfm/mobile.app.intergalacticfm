@@ -240,7 +240,7 @@ function feedNowPlaying(nowPlayingMetadata) {
     var otherInfo = (nowPlayingMetadatas.album !== EMPTY_VAL ? nowPlayingMetadatas.album : EMPTY_VAL) +
         (nowPlayingMetadatas.label !== EMPTY_VAL ? ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.label : EMPTY_VAL) +
         (nowPlayingMetadatas.year !== EMPTY_VAL ? LINE_BREAK + nowPlayingMetadatas.year : EMPTY_VAL) +
-        (nowPlayingMetadatas.country !== EMPTY_VAL ? " , " + nowPlayingMetadatas.country : EMPTY_VAL);
+        (nowPlayingMetadatas.country !== EMPTY_VAL ? ", " + nowPlayingMetadatas.country : EMPTY_VAL);
     // ARTIST - title 
     feedHTML(NOW_PLAYING_DIV_ID, main);
     // ALBUM - YEAR, COUNTRY
