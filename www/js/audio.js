@@ -2,106 +2,114 @@ var currentNowPlayingUrl;
 var nowPlayingRequestTimer;
 var selectedChannel;
 var stations;
-var previousTrackHash = EMPTY_VAL;
-var previousExtractedCoverHTML = EMPTY_VAL;
+var previousTrackHash = window.EMPTY_VAL;
+var previousExtractedCoverHTML = window.EMPTY_VAL;
 
-
-/* bing the channel buttons to the playChannel function */
-document.getElementById(CBS_BUTTON_ID).addEventListener(CLICK_EVENT_NAME,
-    function () {
-        document.getElementById(CBS_BUTTON_ID).classList.add(IS_DISABLED_CSS_CLASS);
+window.addEventListener('DOMContentLoaded', () => {
+    // bind the channel buttons to the playChannel function
+    document.getElementById(window.CBS_BUTTON_ID).addEventListener(window.CLICK_EVENT_NAME, function () {
+        document.getElementById(window.CBS_BUTTON_ID).classList.add(window.IS_DISABLED_CSS_CLASS);
         playChannel(0);
     });
-document.getElementById(DF_BUTTON_ID).addEventListener(CLICK_EVENT_NAME,
-    function () {
-        document.getElementById(DF_BUTTON_ID).classList.add(IS_DISABLED_CSS_CLASS);
+    document.getElementById(window.DF_BUTTON_ID).addEventListener(window.CLICK_EVENT_NAME, function () {
+        document.getElementById(window.DF_BUTTON_ID).classList.add(window.IS_DISABLED_CSS_CLASS);
         playChannel(1);
     });
-document.getElementById(TDM_BUTTON_ID).addEventListener(CLICK_EVENT_NAME,
-    function () {
-        document.getElementById(TDM_BUTTON_ID).classList.add(IS_DISABLED_CSS_CLASS);
+    document.getElementById(window.TDM_BUTTON_ID).addEventListener(window.CLICK_EVENT_NAME, function () {
+        document.getElementById(window.TDM_BUTTON_ID).classList.add(window.IS_DISABLED_CSS_CLASS);
         playChannel(2);
     });
 
-/* bing the stop button to stop music from playing */
-document.getElementById(STOP_BUTTON_ID).addEventListener(CLICK_EVENT_NAME, function () {
-    stop();
-    reset();
+    // bind the stop button to stop music from playing
+    document.getElementById(window.STOP_BUTTON_ID).addEventListener(window.CLICK_EVENT_NAME, function () {
+        stop();
+        reset();
+    });
 });
 
-/* stop the audio player */
+// stop the audio player
 function stop() {
-    AUDIO_PLAYER.src = '';
-    if (isAndroidMusicServiceAvailable()) {
-        /* android plugin receives the playback state */
-        cordova.plugins.MusicService.setPlaying(false);
+    if (window.AUDIO_PLAYER) {
+        window.AUDIO_PLAYER.src = '';
+        if (typeof isAndroidMusicServiceAvailable === 'function' && isAndroidMusicServiceAvailable()) {
+            cordova.plugins.MusicService.setPlaying(false);
+        }
     }
 }
-/* plays the channels stream url */
-function playChannel(channelNumber) {
-    var channelTitle = fetchedStations[channelNumber].title;
-    try {
-        /* scope variable that can be used in other functions to always have the knowledge of the current selected channel */
-        selectedChannel = channelNumber;
-        /* set the source to the audio player */
-        AUDIO_PLAYER.src = fetchedStations[channelNumber].src;
-        /* load the stream: not very needed since there is no preload */
-        AUDIO_PLAYER.load();
-        /* audio context object is used to speed up where possible iOS to load, doesn't really improve */
-        audioContext.resume().then(() => {
-            AUDIO_PLAYER.play();
-        });
-        /* all the rest of needed functionalities */
-        setLockscreenTrackCommands();
-        addAudioEventListeners(AUDIO_PLAYER);
-        clearTimeout(nowPlayingRequestTimer);
-        previousExtractedCoverHTML = EMPTY_VAL;
 
-        var channelTitle = fetchedStations[channelNumber].title;
-        displayMessage(LOADING_MSG + channelTitle + "...");
-        currentNowPlayingUrl = NOW_PLAYING_REQUEST_PREFIX + channelTitle;
-        /* starts the now playing function */
+// plays the channel stream url
+function playChannel(channelNumber) {
+    var channelTitle = 'Unknown';
+    if (fetchedStations && fetchedStations[channelNumber] && fetchedStations[channelNumber].title) {
+        channelTitle = fetchedStations[channelNumber].title;
+    }
+
+    try {
+        selectedChannel = channelNumber;
+
+        if (fetchedStations && fetchedStations[channelNumber] && fetchedStations[channelNumber].src) {
+            window.AUDIO_PLAYER.src = fetchedStations[channelNumber].src;
+        }
+
+        window.AUDIO_PLAYER.load();
+        audioContext.resume().then(() => {
+            window.AUDIO_PLAYER.play();
+        });
+
+        setLockscreenTrackCommands();
+        addAudioEventListeners(window.AUDIO_PLAYER);
+        clearTimeout(nowPlayingRequestTimer);
+        previousExtractedCoverHTML = window.EMPTY_VAL;
+
+        displayMessage(window.LOADING_MSG + channelTitle + "...");
+        currentNowPlayingUrl = window.NOW_PLAYING_REQUEST_PREFIX + channelTitle;
+
         getNowPlaying();
     } catch (error) {
-        var errorMessage =
-            "Error while loading " + channelTitle + ": " + error;
+        var errorMessage = "Error while loading " + channelTitle + ": " + error;
         console.log(errorMessage);
         reset();
         displayMessage(errorMessage);
     }
-
 }
 
-/* iOS and browsers receive event listeners from media session object, not android */
+// iOS and browsers receive event listeners from media session object, not Android
 function addAudioEventListeners(audioPlayer) {
-    if (MEDIASESSION_NAME in navigator) {
-        audioPlayer.addEventListener(PLAY_ACTION_NAME, () => {
+    if (window.MEDIASESSION_NAME in navigator) {
+        audioPlayer.addEventListener(window.PLAY_ACTION_NAME, () => {
             navigator.mediaSession.playbackState = 'playing';
         });
-        audioPlayer.addEventListener(PAUSE_ACTION_NAME, () => {
+        audioPlayer.addEventListener(window.PAUSE_ACTION_NAME, () => {
             navigator.mediaSession.playbackState = 'paused';
         });
-        /* coming back from lockscreen action */
+
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === "visible") {
-                if (navigator.mediaSession.playbackState == "playing") {
-                    /* binded but no action is required for now */
+                if (navigator.mediaSession.playbackState === "playing") {
+                    // no action needed
                 }
             }
         });
     }
 }
 
-/* request now playing from IFM server every constants.NOW_PLAYING_REQUEST_TIMEOUT_MSEC */
+// request now playing from IFM server every constants.NOW_PLAYING_REQUEST_TIMEOUT_MSEC
 async function getNowPlaying() {
-    let trackMetadata;
+    var trackMetadata;
     try {
-        const response = await fetch(currentNowPlayingUrl);
+        var response = await fetch(currentNowPlayingUrl);
         if (!response.ok) {
             trackMetadata = setDefaultNowPlayingInfo();
         } else {
             trackMetadata = await response.json();
-            trackMetadata.title = fixEncoding(trackMetadata.title);
+            if (!trackMetadata || typeof trackMetadata.title !== 'string') {
+                trackMetadata = setDefaultNowPlayingInfo();
+            } else {
+                trackMetadata.title = fixEncoding(trackMetadata.title);
+                if (!trackMetadata.image_file) {
+                    trackMetadata.image_file = window.DEFAULT_IMAGE_NOT_FOUND;
+                }
+            }
         }
     } catch (error) {
         console.warn("NowPlaying API error:", error);
@@ -109,18 +117,16 @@ async function getNowPlaying() {
     }
 
     var metaDataHash = trackMetadata.title + trackMetadata.image_file;
-    if (previousTrackHash != metaDataHash) {
-        /* if we have a new track, by comparing the attribute title, we update the metadatas */
+    if (previousTrackHash !== metaDataHash) {
         setTrackMetadata(trackMetadata);
-        var newTrack = metaDataHash;
-        previousTrackHash = newTrack;
+        previousTrackHash = metaDataHash;
         feedNowPlaying(trackMetadata);
     }
-    // restart the timer for polling the now playing api
-    nowPlayingRequestTimer = setTimeout(getNowPlaying, NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
+
+    nowPlayingRequestTimer = setTimeout(getNowPlaying, window.NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
 }
 
-/* some titles arrives in non-UTF8 format, so needs a forcing decoding */
+// force UTF-8 decoding
 function fixEncoding(str) {
     try {
         return decodeURIComponent(escape(str));
@@ -128,132 +134,125 @@ function fixEncoding(str) {
         return str;
     }
 }
-/* in case there is no info on playing track, we show default value instead of crashing */
+
+// default info if API fails
 function setDefaultNowPlayingInfo() {
     return {
-        "title": "Error - No info received from Mothership.",
-        "image_file": DEFAULT_IMAGE_NOT_FOUND
+        title: "No info received from Mothership.",
+        image_file: window.DEFAULT_IMAGE_NOT_FOUND
     };
 }
 
-/* init the object metadatas, used to display music info */
+// object for current track metadata
 var nowPlayingMetadatas = {
-    "artist": "",
-    "title": "",
-    "album": "",
-    "label": "",
-    "year": "",
-    "country": "",
-    "ifmxLog": "",
-    "artwork_url": ""
-}
-// example of structure of the return string "OMICRON - Positron | The Generation and Motion of a Pulse | Instinct Ambient | 1995 | US | Electronix Surveillance * Insta: @intergalacticfm *  "
-/* this function parse the response of the now playing metadata from IFM server */
+    artist: "",
+    title: "",
+    album: "",
+    label: "",
+    year: "",
+    country: "",
+    ifmxLog: "",
+    artwork_url: ""
+};
+
+// safely sets track metadata
 function setTrackMetadata(trackMetadata) {
-    if (trackMetadata) {
-        const trackMetadatas = trackMetadata.title.split(METADATA_SPLIT_CHAR);
-        var notCorrupted = trackMetadatas[0].includes(ARTIST_TITLE_SPLIT_STRING);
-        var manydash = (trackMetadatas[0].match(/-/g) || []).length != 1;
-        var artist_title = trackMetadatas[0];
-        var artist = artist_title;
-        var title = EMPTY_VAL;
-        if (notCorrupted && !manydash) {
-            artist = artist_title.split(ARTIST_TITLE_SPLIT_STRING)[0].trim();
-            title = artist_title.split(ARTIST_TITLE_SPLIT_STRING)[1].trim();
-        }
-        var album = trackMetadatas[1] ? trackMetadatas[1].trim() : EMPTY_VAL;
-        var label = trackMetadatas[2] ? trackMetadatas[2].trim() : EMPTY_VAL;
-        var year = trackMetadatas[3] ? trackMetadatas[3].trim() : EMPTY_VAL;
-        var country = trackMetadatas[4] ? trackMetadatas[4].trim() : EMPTY_VAL;
-        var ifmxLog = trackMetadatas[5] ? trackMetadatas[5].trim() : DEFAULT_SCROLLING_TEXT;
-        // build the shared object
-        nowPlayingMetadatas.artist = artist;
-        nowPlayingMetadatas.title = title;
-        nowPlayingMetadatas.album = album;
-        nowPlayingMetadatas.label = label;
-        nowPlayingMetadatas.year = year;
-        nowPlayingMetadatas.country = country;
-        nowPlayingMetadatas.artwork_url = trackMetadata.image_file;
-        // we put the extra info of the now playing in the scrolling text so IFMx can say what he wants when he wants
-        setScrollingText(ifmxLog);
-        var coverPath = COVER_PATH_ARRAY[selectedChannel];
-        if (MEDIASESSION_NAME in navigator) {
-            // iOS metadata update
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: title,
-                artist: artist,
-                album: album,
-                artwork: [{
-                    src: coverPath
-                }]
-            });
-        }
-        if (isAndroidMusicServiceAvailable()) {
-            // Android metadata update
-            cordova.plugins.MusicService.updateMetadata(
-                nowPlayingMetadatas.title,
-                nowPlayingMetadatas.artist,
-                nowPlayingMetadatas.album,
-                COVER_PATH_ARRAY[selectedChannel]);
-            /* android plugin receives the playback state */
-            cordova.plugins.MusicService.setPlaying(true);
+    if (!trackMetadata || typeof trackMetadata.title !== "string") return;
+    var rawTitle = trackMetadata.title || window.EMPTY_VAL;
+    var trackMetadatas = rawTitle.split(window.METADATA_SPLIT_CHAR);
+    var mainPart = trackMetadatas[0] || window.EMPTY_VAL;
+    var splitString = window.ARTIST_TITLE_SPLIT_STRING || ' - ';
+
+    var artist = mainPart || '';
+    var title = '';
+
+    if (mainPart && mainPart.indexOf(splitString) >= 0) {
+        var parts = mainPart.split(splitString);
+        if (parts.length >= 2) {
+            artist = parts[0].trim();
+            title = parts[1].trim();
         }
     }
-}
+    nowPlayingMetadatas.artist = artist;
+    nowPlayingMetadatas.title = title;
+    nowPlayingMetadatas.album = trackMetadatas[1] ? trackMetadatas[1].trim() : '';
+    nowPlayingMetadatas.label = trackMetadatas[2] ? trackMetadatas[2].trim() : '';
+    nowPlayingMetadatas.year = trackMetadatas[3] ? trackMetadatas[3].trim() : '';
+    nowPlayingMetadatas.country = trackMetadatas[4] ? trackMetadatas[4].trim() : '';
+    nowPlayingMetadatas.artwork_url = trackMetadata.image_file || window.DEFAULT_IMAGE_NOT_FOUND;
 
+    var ifmxLog = trackMetadatas[5] ? trackMetadatas[5].trim() : window.DEFAULT_SCROLLING_TEXT || '';
+    setScrollingText(ifmxLog);
+
+    var coverPath = window.DEFAULT_IMAGE_NOT_FOUND;
+    if (window.COVER_PATH_ARRAY && window.COVER_PATH_ARRAY[selectedChannel]) {
+        coverPath = window.COVER_PATH_ARRAY[selectedChannel];
+    }
+    console.log("coverPath: " + coverPath);
+
+    if (window.MEDIASESSION_NAME in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: title,
+            artist: artist,
+            album: nowPlayingMetadatas.album,
+            artwork: [{
+                src: coverPath
+            }]
+        });
+    }
+
+    if (typeof isAndroidMusicServiceAvailable === 'function' &&
+        isAndroidMusicServiceAvailable() &&
+        typeof cordova !== 'undefined' &&
+        cordova.plugins &&
+        cordova.plugins.MusicService) {
+        cordova.plugins.MusicService.updateMetadata(
+            nowPlayingMetadatas.title,
+            nowPlayingMetadatas.artist,
+            nowPlayingMetadatas.album,
+            coverPath
+        );
+        cordova.plugins.MusicService.setPlaying(true);
+    }
+}
 
 function setLockscreenTrackCommands() {
-    /* iOS lockscreen commands for next, prev track */
-    if (MEDIASESSION_NAME in navigator) {
-        /* if channel is the first, we only move forward. if channel is last we only move backward */
-        var previousIndex = selectedChannel == 0 ? 2 : (selectedChannel - 1);
-        var nextIndex = selectedChannel == 2 ? 0 : (selectedChannel + 1);
-        if (selectedChannel == 0) {
-            // cbs
-            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, null);
-            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
-                playChannel(nextIndex);
-            });
-        } else
-        if (selectedChannel == 1) {
-            // df
-            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
-                playChannel(previousIndex);
-            });
-            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, () => {
-                playChannel(nextIndex);
-            });
-        } else
-        if (selectedChannel == 2) {
-            // tdm
-            navigator.mediaSession.setActionHandler(NEXT_TRACK_ACTION_NAME, null);
-            navigator.mediaSession.setActionHandler(PREVIOUS_TRACK_ACTION_NAME, () => {
-                playChannel(previousIndex);
-            });
+    if (window.MEDIASESSION_NAME in navigator) {
+        var previousIndex = selectedChannel === 0 ? 2 : (selectedChannel - 1);
+        var nextIndex = selectedChannel === 2 ? 0 : (selectedChannel + 1);
+
+        if (selectedChannel === 0) {
+            navigator.mediaSession.setActionHandler(window.PREVIOUS_TRACK_ACTION_NAME, null);
+            navigator.mediaSession.setActionHandler(window.NEXT_TRACK_ACTION_NAME, () => playChannel(nextIndex));
+        } else if (selectedChannel === 1) {
+            navigator.mediaSession.setActionHandler(window.PREVIOUS_TRACK_ACTION_NAME, () => playChannel(previousIndex));
+            navigator.mediaSession.setActionHandler(window.NEXT_TRACK_ACTION_NAME, () => playChannel(nextIndex));
+        } else if (selectedChannel === 2) {
+            navigator.mediaSession.setActionHandler(window.NEXT_TRACK_ACTION_NAME, null);
+            navigator.mediaSession.setActionHandler(window.PREVIOUS_TRACK_ACTION_NAME, () => playChannel(previousIndex));
         }
     }
 }
 
-/* populate the now playing modal with track info and cover */
 function feedNowPlaying(nowPlayingMetadata) {
-    var main = nowPlayingMetadatas.artist + ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.title;
-    var otherInfo = (nowPlayingMetadatas.album !== EMPTY_VAL ? nowPlayingMetadatas.album : EMPTY_VAL) +
-        (nowPlayingMetadatas.label !== EMPTY_VAL ? ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.label : EMPTY_VAL) +
-        (nowPlayingMetadatas.year !== EMPTY_VAL ? LINE_BREAK + nowPlayingMetadatas.year : EMPTY_VAL) +
-        (nowPlayingMetadatas.country !== EMPTY_VAL ? ", " + nowPlayingMetadatas.country : EMPTY_VAL);
-    // ARTIST - title 
-    feedHTML(NOW_PLAYING_DIV_ID, main);
-    // ALBUM - YEAR, COUNTRY
-    feedHTML(NOW_PLAYING_DIV_EXT_ID, otherInfo);
-    // COVER
-    feedHTML(NOW_PLAYING_COVER_DIV_ID, getCoverHTMLfromUrl(nowPlayingMetadata.image_file));
+    var meta = nowPlayingMetadata || {};
+    var main = (nowPlayingMetadatas.artist || '') + window.ARTIST_TITLE_SPLIT_STRING + (nowPlayingMetadatas.title || '');
+    var otherInfo = (nowPlayingMetadatas.album || '') +
+        (nowPlayingMetadatas.label ? window.ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.label : '') +
+        (nowPlayingMetadatas.year ? window.LINE_BREAK + nowPlayingMetadatas.year : '') +
+        (nowPlayingMetadatas.country ? ", " + nowPlayingMetadatas.country : '');
 
-    var modal = document.getElementById(TRACK_INFO_MODAL_ID);
-    var homeContainer = document.getElementById(CONTAINER_ID);
-    var stopButton = document.getElementsByClassName(CLOSE)[0];
-    hideElement(homeContainer);
-    showElement(modal);
-    showElement(stopButton);
+    feedHTML(window.NOW_PLAYING_DIV_ID, main);
+    feedHTML(window.NOW_PLAYING_DIV_EXT_ID, otherInfo);
+    feedHTML(window.NOW_PLAYING_COVER_DIV_ID, getCoverHTMLfromUrl(meta.image_file || window.DEFAULT_IMAGE_NOT_FOUND));
+
+    var modal = document.getElementById(window.TRACK_INFO_MODAL_ID);
+    var homeContainer = document.getElementById(window.CONTAINER_ID);
+    var stopButton = document.getElementsByClassName(window.CLOSE)[0];
+
+    if (homeContainer) hideElement(homeContainer);
+    if (modal) showElement(modal);
+    if (stopButton) showElement(stopButton);
 }
 
 function stopButtonAction() {
@@ -261,33 +260,41 @@ function stopButtonAction() {
     reset();
 }
 
-/* build the html for the cover artwork */
 function getCoverHTMLfromUrl(image_url) {
     return "<img src='" + image_url + "' style='width:90%' onerror=\"imgErrorManagement(this)\"/>";
 }
 
 function imgErrorManagement(source) {
-    source.src = DEFAULT_IMAGE_NOT_FOUND;
-    source.onerror = EMPTY_VAL;
+    source.src = window.DEFAULT_IMAGE_NOT_FOUND;
+    source.onerror = window.EMPTY_VAL;
     return true;
 }
 
-/* reset the app to initial state */
 function reset() {
-    feedHTML(NOW_PLAYING_DIV_ID, EMPTY_VAL);
-    feedHTML(NOW_PLAYING_DIV_EXT_ID, EMPTY_VAL);
-    feedHTML(NOW_PLAYING_COVER_DIV_ID, EMPTY_VAL);
+    feedHTML(window.NOW_PLAYING_DIV_ID, window.EMPTY_VAL);
+    feedHTML(window.NOW_PLAYING_DIV_EXT_ID, window.EMPTY_VAL);
+    feedHTML(window.NOW_PLAYING_COVER_DIV_ID, window.EMPTY_VAL);
     clearTimeout(nowPlayingRequestTimer);
-    previousTrackHash = EMPTY_VAL;
-    previousExtractedCoverHTML = EMPTY_VAL;
-    selectedChannel = EMPTY_VAL;
-    document.title = PAGE_TITLE_DEFAULT;
-    hideElement(document.getElementsByClassName(CLOSE)[0]);
-    hideElement(document.getElementById(TRACK_INFO_MODAL_ID));
+    previousTrackHash = window.EMPTY_VAL;
+    previousExtractedCoverHTML = window.EMPTY_VAL;
+    selectedChannel = window.EMPTY_VAL;
+    document.title = window.PAGE_TITLE_DEFAULT;
+    hideElement(document.getElementsByClassName(window.CLOSE)[0]);
+    hideElement(document.getElementById(window.TRACK_INFO_MODAL_ID));
     fetchStations();
-    showElement(document.getElementById(CONTAINER_ID));
-    setScrollingText(DEFAULT_SCROLLING_TEXT);
-    document.getElementById(CBS_BUTTON_ID).classList.remove(IS_DISABLED_CSS_CLASS);
-    document.getElementById(DF_BUTTON_ID).classList.remove(IS_DISABLED_CSS_CLASS);
-    document.getElementById(TDM_BUTTON_ID).classList.remove(IS_DISABLED_CSS_CLASS);
+    showElement(document.getElementById(window.CONTAINER_ID));
+    setScrollingText(window.DEFAULT_SCROLLING_TEXT);
+    document.getElementById(window.CBS_BUTTON_ID).classList.remove(window.IS_DISABLED_CSS_CLASS);
+    document.getElementById(window.DF_BUTTON_ID).classList.remove(window.IS_DISABLED_CSS_CLASS);
+    document.getElementById(window.TDM_BUTTON_ID).classList.remove(window.IS_DISABLED_CSS_CLASS);
 }
+
+// expose functions for tests
+window.getNowPlaying = getNowPlaying;
+window.setTrackMetadata = setTrackMetadata;
+window.setDefaultNowPlayingInfo = setDefaultNowPlayingInfo;
+window.nowPlayingMetadatas = nowPlayingMetadatas;
+window.feedNowPlaying = feedNowPlaying;
+window.fixEncoding = fixEncoding;
+window.stop = stop;
+window.playChannel = playChannel;
