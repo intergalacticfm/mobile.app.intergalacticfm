@@ -43,7 +43,6 @@ var cordova;
 this function is for using the android plugin, cordova libraries will not be available before this event has triggered
 */
 function onDeviceReady() {
-    //console.log("DEVICE IS READY!");
     if (isAndroidMusicServiceAvailable()) {
         // android
         cordova.plugins.MusicService.start(

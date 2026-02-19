@@ -23,12 +23,10 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById(constants.CBS_BUTTON_ID).addEventListener(constants.CLICK_EVENT_NAME, function () {
         document.getElementById(constants.CBS_BUTTON_ID).classList.add(constants.IS_DISABLED_CSS_CLASS);
         playChannel(0);
-        console.log("PLAY CBS CLICKED");
     });
     document.getElementById(constants.DF_BUTTON_ID).addEventListener(constants.CLICK_EVENT_NAME, function () {
         document.getElementById(constants.DF_BUTTON_ID).classList.add(constants.IS_DISABLED_CSS_CLASS);
         playChannel(1);
-        console.log("PLAY DF CLICKED");
     });
     document.getElementById(constants.TDM_BUTTON_ID).addEventListener(constants.CLICK_EVENT_NAME, function () {
         document.getElementById(constants.TDM_BUTTON_ID).classList.add(constants.IS_DISABLED_CSS_CLASS);
