@@ -1,36 +1,52 @@
+import * as constants from './constants.js';
+import {
+    feedHTML,
+    showElement,
+    hideElement,
+    displayMessage,
+    fetchedStations,
+    setScrollingText,
+    fetchStations,
+    audioContext
+} from './index.js';
+
 var currentNowPlayingUrl;
 var nowPlayingRequestTimer;
 var selectedChannel;
 var stations;
-var previousTrackHash = window.EMPTY_VAL;
-var previousExtractedCoverHTML = window.EMPTY_VAL;
+var previousTrackHash = constants.EMPTY_VAL;
+var previousExtractedCoverHTML = constants.EMPTY_VAL;
+var AUDIO_PLAYER;
 
 window.addEventListener('DOMContentLoaded', () => {
     // bind the channel buttons to the playChannel function
-    document.getElementById(window.CBS_BUTTON_ID).addEventListener(window.CLICK_EVENT_NAME, function () {
-        document.getElementById(window.CBS_BUTTON_ID).classList.add(window.IS_DISABLED_CSS_CLASS);
+    document.getElementById(constants.CBS_BUTTON_ID).addEventListener(constants.CLICK_EVENT_NAME, function () {
+        document.getElementById(constants.CBS_BUTTON_ID).classList.add(constants.IS_DISABLED_CSS_CLASS);
         playChannel(0);
+        console.log("PLAY CBS CLICKED");
     });
-    document.getElementById(window.DF_BUTTON_ID).addEventListener(window.CLICK_EVENT_NAME, function () {
-        document.getElementById(window.DF_BUTTON_ID).classList.add(window.IS_DISABLED_CSS_CLASS);
+    document.getElementById(constants.DF_BUTTON_ID).addEventListener(constants.CLICK_EVENT_NAME, function () {
+        document.getElementById(constants.DF_BUTTON_ID).classList.add(constants.IS_DISABLED_CSS_CLASS);
         playChannel(1);
+        console.log("PLAY DF CLICKED");
     });
-    document.getElementById(window.TDM_BUTTON_ID).addEventListener(window.CLICK_EVENT_NAME, function () {
-        document.getElementById(window.TDM_BUTTON_ID).classList.add(window.IS_DISABLED_CSS_CLASS);
+    document.getElementById(constants.TDM_BUTTON_ID).addEventListener(constants.CLICK_EVENT_NAME, function () {
+        document.getElementById(constants.TDM_BUTTON_ID).classList.add(constants.IS_DISABLED_CSS_CLASS);
         playChannel(2);
     });
 
     // bind the stop button to stop music from playing
-    document.getElementById(window.STOP_BUTTON_ID).addEventListener(window.CLICK_EVENT_NAME, function () {
+    document.getElementById(constants.STOP_BUTTON_ID).addEventListener(constants.CLICK_EVENT_NAME, function () {
         stop();
         reset();
     });
+    AUDIO_PLAYER = document.getElementById('player');
 });
 
 // stop the audio player
-function stop() {
-    if (window.AUDIO_PLAYER) {
-        window.AUDIO_PLAYER.src = '';
+export function stop() {
+    if (AUDIO_PLAYER) {
+        AUDIO_PLAYER.src = '';
         if (typeof isAndroidMusicServiceAvailable === 'function' && isAndroidMusicServiceAvailable()) {
             cordova.plugins.MusicService.setPlaying(false);
         }
@@ -38,31 +54,31 @@ function stop() {
 }
 
 // plays the channel stream url
-function playChannel(channelNumber) {
+export async function playChannel(channelNumber) {
     var channelTitle = 'Unknown';
-    if (fetchedStations && fetchedStations[channelNumber] && fetchedStations[channelNumber].title) {
-        channelTitle = fetchedStations[channelNumber].title;
+    if (!fetchedStations || fetchedStations.length === 0) {
+        await fetchStations();
     }
-
+    const station = fetchedStations[channelNumber];
+    if (!station || !station.src) {
+        displayMessage('Station not available');
+        return;
+    }
+    channelTitle = fetchedStations[channelNumber].title;
     try {
         selectedChannel = channelNumber;
-
-        if (fetchedStations && fetchedStations[channelNumber] && fetchedStations[channelNumber].src) {
-            window.AUDIO_PLAYER.src = fetchedStations[channelNumber].src;
-        }
-
-        window.AUDIO_PLAYER.load();
+        AUDIO_PLAYER.src = fetchedStations[channelNumber].src;
+        AUDIO_PLAYER.load();
         audioContext.resume().then(() => {
-            window.AUDIO_PLAYER.play();
+            AUDIO_PLAYER.play();
         });
-
         setLockscreenTrackCommands();
-        addAudioEventListeners(window.AUDIO_PLAYER);
+        addAudioEventListeners(AUDIO_PLAYER);
         clearTimeout(nowPlayingRequestTimer);
-        previousExtractedCoverHTML = window.EMPTY_VAL;
+        previousExtractedCoverHTML = constants.EMPTY_VAL;
 
-        displayMessage(window.LOADING_MSG + channelTitle + "...");
-        currentNowPlayingUrl = window.NOW_PLAYING_REQUEST_PREFIX + channelTitle;
+        displayMessage(constants.LOADING_MSG + channelTitle + "...");
+        currentNowPlayingUrl = constants.NOW_PLAYING_REQUEST_PREFIX + channelTitle;
 
         getNowPlaying();
     } catch (error) {
@@ -75,11 +91,11 @@ function playChannel(channelNumber) {
 
 // iOS and browsers receive event listeners from media session object, not Android
 function addAudioEventListeners(audioPlayer) {
-    if (window.MEDIASESSION_NAME in navigator) {
-        audioPlayer.addEventListener(window.PLAY_ACTION_NAME, () => {
+    if (constants.MEDIASESSION_NAME in navigator) {
+        audioPlayer.addEventListener(constants.PLAY_ACTION_NAME, () => {
             navigator.mediaSession.playbackState = 'playing';
         });
-        audioPlayer.addEventListener(window.PAUSE_ACTION_NAME, () => {
+        audioPlayer.addEventListener(constants.PAUSE_ACTION_NAME, () => {
             navigator.mediaSession.playbackState = 'paused';
         });
 
@@ -107,7 +123,7 @@ async function getNowPlaying() {
             } else {
                 trackMetadata.title = fixEncoding(trackMetadata.title);
                 if (!trackMetadata.image_file) {
-                    trackMetadata.image_file = window.DEFAULT_IMAGE_NOT_FOUND;
+                    trackMetadata.image_file = constants.DEFAULT_IMAGE_NOT_FOUND;
                 }
             }
         }
@@ -123,7 +139,7 @@ async function getNowPlaying() {
         feedNowPlaying(trackMetadata);
     }
 
-    nowPlayingRequestTimer = setTimeout(getNowPlaying, window.NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
+    nowPlayingRequestTimer = setTimeout(getNowPlaying, constants.NOW_PLAYING_REQUEST_TIMEOUT_MSEC);
 }
 
 // force UTF-8 decoding
@@ -139,7 +155,7 @@ function fixEncoding(str) {
 function setDefaultNowPlayingInfo() {
     return {
         title: "No info received from Mothership.",
-        image_file: window.DEFAULT_IMAGE_NOT_FOUND
+        image_file: constants.DEFAULT_IMAGE_NOT_FOUND
     };
 }
 
@@ -158,10 +174,10 @@ var nowPlayingMetadatas = {
 // safely sets track metadata
 function setTrackMetadata(trackMetadata) {
     if (!trackMetadata || typeof trackMetadata.title !== "string") return;
-    var rawTitle = trackMetadata.title || window.EMPTY_VAL;
-    var trackMetadatas = rawTitle.split(window.METADATA_SPLIT_CHAR);
-    var mainPart = trackMetadatas[0] || window.EMPTY_VAL;
-    var splitString = window.ARTIST_TITLE_SPLIT_STRING || ' - ';
+    var rawTitle = trackMetadata.title || constants.EMPTY_VAL;
+    var trackMetadatas = rawTitle.split(constants.METADATA_SPLIT_CHAR);
+    var mainPart = trackMetadatas[0] || constants.EMPTY_VAL;
+    var splitString = constants.ARTIST_TITLE_SPLIT_STRING || ' - ';
 
     var artist = mainPart || '';
     var title = '';
@@ -179,18 +195,17 @@ function setTrackMetadata(trackMetadata) {
     nowPlayingMetadatas.label = trackMetadatas[2] ? trackMetadatas[2].trim() : '';
     nowPlayingMetadatas.year = trackMetadatas[3] ? trackMetadatas[3].trim() : '';
     nowPlayingMetadatas.country = trackMetadatas[4] ? trackMetadatas[4].trim() : '';
-    nowPlayingMetadatas.artwork_url = trackMetadata.image_file || window.DEFAULT_IMAGE_NOT_FOUND;
+    nowPlayingMetadatas.artwork_url = trackMetadata.image_file || constants.DEFAULT_IMAGE_NOT_FOUND;
 
-    var ifmxLog = trackMetadatas[5] ? trackMetadatas[5].trim() : window.DEFAULT_SCROLLING_TEXT || '';
+    var ifmxLog = trackMetadatas[5] ? trackMetadatas[5].trim() : constants.DEFAULT_SCROLLING_TEXT || '';
     setScrollingText(ifmxLog);
 
-    var coverPath = window.DEFAULT_IMAGE_NOT_FOUND;
-    if (window.COVER_PATH_ARRAY && window.COVER_PATH_ARRAY[selectedChannel]) {
-        coverPath = window.COVER_PATH_ARRAY[selectedChannel];
+    var coverPath = constants.DEFAULT_IMAGE_NOT_FOUND;
+    if (constants.COVER_PATH_ARRAY && constants.COVER_PATH_ARRAY[selectedChannel]) {
+        coverPath = constants.COVER_PATH_ARRAY[selectedChannel];
     }
-    console.log("coverPath: " + coverPath);
 
-    if (window.MEDIASESSION_NAME in navigator) {
+    if (constants.MEDIASESSION_NAME in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
             title: title,
             artist: artist,
@@ -217,38 +232,38 @@ function setTrackMetadata(trackMetadata) {
 }
 
 function setLockscreenTrackCommands() {
-    if (window.MEDIASESSION_NAME in navigator) {
+    if (constants.MEDIASESSION_NAME in navigator) {
         var previousIndex = selectedChannel === 0 ? 2 : (selectedChannel - 1);
         var nextIndex = selectedChannel === 2 ? 0 : (selectedChannel + 1);
 
         if (selectedChannel === 0) {
-            navigator.mediaSession.setActionHandler(window.PREVIOUS_TRACK_ACTION_NAME, null);
-            navigator.mediaSession.setActionHandler(window.NEXT_TRACK_ACTION_NAME, () => playChannel(nextIndex));
+            navigator.mediaSession.setActionHandler(constants.PREVIOUS_TRACK_ACTION_NAME, null);
+            navigator.mediaSession.setActionHandler(constants.NEXT_TRACK_ACTION_NAME, () => playChannel(nextIndex));
         } else if (selectedChannel === 1) {
-            navigator.mediaSession.setActionHandler(window.PREVIOUS_TRACK_ACTION_NAME, () => playChannel(previousIndex));
-            navigator.mediaSession.setActionHandler(window.NEXT_TRACK_ACTION_NAME, () => playChannel(nextIndex));
+            navigator.mediaSession.setActionHandler(constants.PREVIOUS_TRACK_ACTION_NAME, () => playChannel(previousIndex));
+            navigator.mediaSession.setActionHandler(constants.NEXT_TRACK_ACTION_NAME, () => playChannel(nextIndex));
         } else if (selectedChannel === 2) {
-            navigator.mediaSession.setActionHandler(window.NEXT_TRACK_ACTION_NAME, null);
-            navigator.mediaSession.setActionHandler(window.PREVIOUS_TRACK_ACTION_NAME, () => playChannel(previousIndex));
+            navigator.mediaSession.setActionHandler(constants.NEXT_TRACK_ACTION_NAME, null);
+            navigator.mediaSession.setActionHandler(constants.PREVIOUS_TRACK_ACTION_NAME, () => playChannel(previousIndex));
         }
     }
 }
 
-function feedNowPlaying(nowPlayingMetadata) {
+export function feedNowPlaying(nowPlayingMetadata) {
     var meta = nowPlayingMetadata || {};
-    var main = (nowPlayingMetadatas.artist || '') + window.ARTIST_TITLE_SPLIT_STRING + (nowPlayingMetadatas.title || '');
+    var main = (nowPlayingMetadatas.artist || '') + constants.ARTIST_TITLE_SPLIT_STRING + (nowPlayingMetadatas.title || '');
     var otherInfo = (nowPlayingMetadatas.album || '') +
-        (nowPlayingMetadatas.label ? window.ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.label : '') +
-        (nowPlayingMetadatas.year ? window.LINE_BREAK + nowPlayingMetadatas.year : '') +
+        (nowPlayingMetadatas.label ? constants.ARTIST_TITLE_SPLIT_STRING + nowPlayingMetadatas.label : '') +
+        (nowPlayingMetadatas.year ? constants.LINE_BREAK + nowPlayingMetadatas.year : '') +
         (nowPlayingMetadatas.country ? ", " + nowPlayingMetadatas.country : '');
 
-    feedHTML(window.NOW_PLAYING_DIV_ID, main);
-    feedHTML(window.NOW_PLAYING_DIV_EXT_ID, otherInfo);
-    feedHTML(window.NOW_PLAYING_COVER_DIV_ID, getCoverHTMLfromUrl(meta.image_file || window.DEFAULT_IMAGE_NOT_FOUND));
+    feedHTML(constants.NOW_PLAYING_DIV_ID, main);
+    feedHTML(constants.NOW_PLAYING_DIV_EXT_ID, otherInfo);
+    feedHTML(constants.NOW_PLAYING_COVER_DIV_ID, getCoverHTMLfromUrl(meta.image_file || constants.DEFAULT_IMAGE_NOT_FOUND));
 
-    var modal = document.getElementById(window.TRACK_INFO_MODAL_ID);
-    var homeContainer = document.getElementById(window.CONTAINER_ID);
-    var stopButton = document.getElementsByClassName(window.CLOSE)[0];
+    var modal = document.getElementById(constants.TRACK_INFO_MODAL_ID);
+    var homeContainer = document.getElementById(constants.CONTAINER_ID);
+    var stopButton = document.getElementsByClassName(constants.CLOSE)[0];
 
     if (homeContainer) hideElement(homeContainer);
     if (modal) showElement(modal);
@@ -261,40 +276,24 @@ function stopButtonAction() {
 }
 
 function getCoverHTMLfromUrl(image_url) {
-    return "<img src='" + image_url + "' style='width:90%' onerror=\"imgErrorManagement(this)\"/>";
+    return `<img src="${image_url}" style="width:90%" onerror="this.src='${constants.DEFAULT_IMAGE_NOT_FOUND}'; this.onerror=null;">`;
 }
 
-function imgErrorManagement(source) {
-    source.src = window.DEFAULT_IMAGE_NOT_FOUND;
-    source.onerror = window.EMPTY_VAL;
-    return true;
-}
-
-function reset() {
-    feedHTML(window.NOW_PLAYING_DIV_ID, window.EMPTY_VAL);
-    feedHTML(window.NOW_PLAYING_DIV_EXT_ID, window.EMPTY_VAL);
-    feedHTML(window.NOW_PLAYING_COVER_DIV_ID, window.EMPTY_VAL);
+export function reset() {
+    feedHTML(constants.NOW_PLAYING_DIV_ID, constants.EMPTY_VAL);
+    feedHTML(constants.NOW_PLAYING_DIV_EXT_ID, constants.EMPTY_VAL);
+    feedHTML(constants.NOW_PLAYING_COVER_DIV_ID, constants.EMPTY_VAL);
     clearTimeout(nowPlayingRequestTimer);
-    previousTrackHash = window.EMPTY_VAL;
-    previousExtractedCoverHTML = window.EMPTY_VAL;
-    selectedChannel = window.EMPTY_VAL;
-    document.title = window.PAGE_TITLE_DEFAULT;
-    hideElement(document.getElementsByClassName(window.CLOSE)[0]);
-    hideElement(document.getElementById(window.TRACK_INFO_MODAL_ID));
+    previousTrackHash = constants.EMPTY_VAL;
+    previousExtractedCoverHTML = constants.EMPTY_VAL;
+    selectedChannel = constants.EMPTY_VAL;
+    document.title = constants.PAGE_TITLE_DEFAULT;
+    hideElement(document.getElementsByClassName(constants.CLOSE)[0]);
+    hideElement(document.getElementById(constants.TRACK_INFO_MODAL_ID));
     fetchStations();
-    showElement(document.getElementById(window.CONTAINER_ID));
-    setScrollingText(window.DEFAULT_SCROLLING_TEXT);
-    document.getElementById(window.CBS_BUTTON_ID).classList.remove(window.IS_DISABLED_CSS_CLASS);
-    document.getElementById(window.DF_BUTTON_ID).classList.remove(window.IS_DISABLED_CSS_CLASS);
-    document.getElementById(window.TDM_BUTTON_ID).classList.remove(window.IS_DISABLED_CSS_CLASS);
+    showElement(document.getElementById(constants.CONTAINER_ID));
+    setScrollingText(constants.DEFAULT_SCROLLING_TEXT);
+    document.getElementById(constants.CBS_BUTTON_ID).classList.remove(constants.IS_DISABLED_CSS_CLASS);
+    document.getElementById(constants.DF_BUTTON_ID).classList.remove(constants.IS_DISABLED_CSS_CLASS);
+    document.getElementById(constants.TDM_BUTTON_ID).classList.remove(constants.IS_DISABLED_CSS_CLASS);
 }
-
-// expose functions for tests
-window.getNowPlaying = getNowPlaying;
-window.setTrackMetadata = setTrackMetadata;
-window.setDefaultNowPlayingInfo = setDefaultNowPlayingInfo;
-window.nowPlayingMetadatas = nowPlayingMetadatas;
-window.feedNowPlaying = feedNowPlaying;
-window.fixEncoding = fixEncoding;
-window.stop = stop;
-window.playChannel = playChannel;

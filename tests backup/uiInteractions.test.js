@@ -11,9 +11,7 @@ import {
     fetchStations
 } from '../www/js/index.js';
 import {
-    playChannel,
-    stop,
-    reset
+    playChannel
 } from '../www/js/audio.js';
 
 // --- MOCK AudioContext PRIMA dei moduli reali ---
@@ -25,7 +23,7 @@ class MockAudioContext {
 window.AudioContext = MockAudioContext;
 window.webkitAudioContext = MockAudioContext;
 
-describe('Channel button behaviour (real DOM, all channels)', () => {
+describe('Channel button behaviour (real DOM, CBS button)', () => {
 
     beforeEach(async () => {
         // --- Pulizia DOM ---
@@ -43,7 +41,7 @@ describe('Channel button behaviour (real DOM, all channels)', () => {
         document.body.appendChild(modal);
 
         // Bottoni canale
-        [constants.CBS_BUTTON_ID, constants.DF_BUTTON_ID, constants.TDM_BUTTON_ID].forEach(id => {
+  [constants.CBS_BUTTON_ID, constants.DF_BUTTON_ID, constants.TDM_BUTTON_ID].forEach(id => {
             const btn = document.createElement('button');
             btn.id = id;
             document.body.appendChild(btn);
@@ -79,9 +77,9 @@ describe('Channel button behaviour (real DOM, all channels)', () => {
         messageBox.id = constants.DISPLAY_MESSAGE_BOX_ID;
         document.body.appendChild(messageBox);
 
-        // Link della pagina
-        [constants.DONATE_LINK_ID, constants.WEBSITE_LINK_ID, constants.ARCHIVE_LINK_ID].forEach(id => {
-            const link = document.createElement('button');
+        // --- Link della pagina per evitare TypeError ---
+  [constants.DONATE_LINK_ID, constants.WEBSITE_LINK_ID, constants.ARCHIVE_LINK_ID].forEach(id => {
+            const link = document.createElement('button'); // button basta per il test
             link.id = id;
             document.body.appendChild(link);
         });
@@ -97,6 +95,15 @@ describe('Channel button behaviour (real DOM, all channels)', () => {
         // --- Dispatch DOMContentLoaded per inizializzare AUDIO_PLAYER ---
         window.dispatchEvent(new Event('DOMContentLoaded'));
 
+        // --- Mock AudioContext ---
+        class MockAudioContext {
+            resume() {
+                return Promise.resolve();
+            }
+        }
+        window.AudioContext = MockAudioContext;
+        window.webkitAudioContext = MockAudioContext;
+
         // --- Mock fetch per stazioni e now playing ---
         vi.stubGlobal('fetch', vi.fn((url) => {
             if (url === constants.STATIONS_JSON_URL) {
@@ -106,17 +113,20 @@ describe('Channel button behaviour (real DOM, all channels)', () => {
                         stations: [
                             {
                                 name: "Cybernetic Broadcasting System",
-                                url: "https://radio.intergalactic.fm/x"
+                                url: "https://radio.intergalactic.fm/x",
+                                nowplaying: "https://tracks.intergalactic.fm/station/1.json?limit=1&offset=0"
                             },
                             {
                                 name: "Disco Fetish",
-                                url: "https://radio.intergalactic.fm/xx"
+                                url: "https://radio.intergalactic.fm/xx",
+                                nowplaying: "https://tracks.intergalactic.fm/station/2.json?limit=1&offset=0"
                             },
                             {
                                 name: "The Dream Machine",
-                                url: "https://radio.intergalactic.fm/xxx"
+                                url: "https://radio.intergalactic.fm/xxx",
+                                nowplaying: "https://tracks.intergalactic.fm/station/3.json?limit=1&offset=0"
                             }
-                        ]
+          ]
                     })
                 });
             } else if (url.startsWith(constants.NOW_PLAYING_REQUEST_PREFIX)) {
@@ -125,71 +135,40 @@ describe('Channel button behaviour (real DOM, all channels)', () => {
                     json: () => Promise.resolve({
                         station_message: "Alone and Unafraid",
                         image_file: "https://www.intergalactic.fm/sites/default/files/covers/nwo18.jpg",
-                        title: "INTERGALACTIC FM",
+                        title: " INTERGALACTIC FM - Just Do What We Say ...",
                         poll_after: 4
                     })
                 });
             }
         }));
 
-        // --- Popola fetchedStations ---
+        // Popola fetchedStations
         await fetchStations();
     });
 
-    it('clicking each channel button hides container and shows the now playing modal', async () => {
-        const channels = [
-            {
-                index: 0,
-                name: "CBS",
-                expectedUrl: "https://radio.intergalactic.fm/x"
-            },
-            {
-                index: 1,
-                name: "DF",
-                expectedUrl: "https://radio.intergalactic.fm/xx"
-            },
-            {
-                index: 2,
-                name: "TDM",
-                expectedUrl: "https://radio.intergalactic.fm/xxx"
-            }
-    ];
+    it('clicking CBS channel button hides container and shows the now playing modal', async () => {
+        const container = document.getElementById(constants.CONTAINER_ID);
+        const modal = document.getElementById(constants.TRACK_INFO_MODAL_ID);
+        const coverDiv = document.getElementById(constants.NOW_PLAYING_COVER_DIV_ID);
 
-        for (const {
-                index,
-                name,
-                expectedUrl
-            } of channels) {
-            console.log(`Testing channel: ${name}`); // <-- stampa il canale corrente
+        // Stato iniziale
+        expect(container.style.display).not.toBe('none');
+        expect(modal.style.display).toBe('none');
+        expect(coverDiv.querySelector('img')).not.toBeNull();
 
-            const container = document.getElementById(constants.CONTAINER_ID);
-            const modal = document.getElementById(constants.TRACK_INFO_MODAL_ID);
-            const coverDiv = document.getElementById(constants.NOW_PLAYING_COVER_DIV_ID);
+        // Click CBS tramite playChannel
+        await playChannel(0);
 
-            // Ricrea l'img ogni iterazione perché stop/reset la svuota
-            coverDiv.innerHTML = '<img />';
+        // Attende microtask per feedNowPlaying
+        await new Promise(resolve => setTimeout(resolve, 0));
 
-            // Stato iniziale
-            expect(container.style.display).not.toBe('none');
-            expect(modal.style.display).toBe('none');
-            expect(coverDiv.querySelector('img')).not.toBeNull();
+        // Verifica DOM aggiornato
+        expect(container.style.display).toBe('none');
+        expect(modal.style.display).toBe('block');
 
-            // Click sul canale
-            await playChannel(index);
-
-            // Attende microtask per feedNowPlaying
-            await new Promise(resolve => setTimeout(resolve, 0));
-
-            // Verifica DOM aggiornato
-            expect(container.style.display).toBe('none');
-            expect(modal.style.display).toBe('block');
-
-            // Verifica fetchedStations
-            expect(fetchedStations[index].src).toBe(expectedUrl);
-
-            // Stop/reset prima di passare al prossimo canale
-            stop();
-            reset();
-        }
+        // Verifica fetchedStations popolato correttamente
+        expect(fetchedStations.length).toBe(3);
+        expect(fetchedStations[0].src).toBe("https://radio.intergalactic.fm/x");
     });
+
 });

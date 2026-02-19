@@ -1,39 +1,41 @@
-var fetchedStations;
-let audioContext;
+import * as constants from './constants.js';
 
-window.onload = function () {
+export let fetchedStations = [];
+export let audioContext;
+
+window.addEventListener('DOMContentLoaded', () => {
     if (!fetchedStations) {
         fetchStations();
     }
 
-    setScrollingText(window.DEFAULT_SCROLLING_TEXT);
+    setScrollingText(constants.DEFAULT_SCROLLING_TEXT);
     refreshScrollingTextAnimation();
     // unlock iOS audio context
     if (!audioContext) {
         audioContext = new(window.AudioContext || window.webkitAudioContext)();
     }
-    document.addEventListener(window.DEVICE_READY_EVENT_NAME, onDeviceReady, false);
+    document.addEventListener(constants.DEVICE_READY_EVENT_NAME, onDeviceReady, false);
     /* prevent all pinch-zoom actions */
     document.addEventListener('gesturestart', e => e.preventDefault());
     document.addEventListener('gesturechange', e => e.preventDefault());
     document.addEventListener('gestureend', e => e.preventDefault());
 
     // page links actions
-    document.getElementById("donateRedirect").addEventListener(window.CLICK_EVENT_NAME,
+    document.getElementById(constants.DONATE_LINK_ID).addEventListener(constants.CLICK_EVENT_NAME,
         function () {
-            window.location.href = window.DONATE_URL;
+            window.location.href = constants.DONATE_URL;
         });
 
-    document.getElementById("websiteRedirect").addEventListener(window.CLICK_EVENT_NAME,
+    document.getElementById(constants.WEBSITE_LINK_ID).addEventListener(constants.CLICK_EVENT_NAME,
         function () {
-            window.location.href = window.WEBSITE_URL;
+            window.location.href = constants.WEBSITE_URL;
         });
 
-    document.getElementById("archiveRedirect").addEventListener(window.CLICK_EVENT_NAME,
+    document.getElementById(constants.ARCHIVE_LINK_ID).addEventListener(constants.CLICK_EVENT_NAME,
         function () {
-            window.location.href = window.ARCHIVE_URL;
+            window.location.href = constants.ARCHIVE_URL;
         });
-};
+});
 
 var cordova;
 
@@ -58,7 +60,7 @@ function onDeviceReady() {
 
 function isAndroidMusicServiceAvailable() {
     return (
-        window.cordova &&
+        constants.cordova &&
         cordova.platformId === "android" &&
         cordova.plugins &&
         cordova.plugins.MusicService &&
@@ -68,8 +70,8 @@ function isAndroidMusicServiceAvailable() {
 
 
 /* requests stations info and stream url from IFM server constants.STATIONS_JSON_URL */
-async function fetchStations() {
-    const response = await fetch(window.STATIONS_JSON_URL).then((response) => {
+export async function fetchStations() {
+    const response = await fetch(constants.STATIONS_JSON_URL).then((response) => {
         if (response.status >= 400 && response.status < 600) {
             var errorMessage = "Unable to load the playlist: " + response.status + " - " +
                 response.statusText;
@@ -103,38 +105,35 @@ async function fetchStations() {
                 ];
 
     // playlist loaded successfuly
-    displayMessage(window.SYSTEM_READY_MSG);
+    displayMessage(constants.SYSTEM_READY_MSG);
 }
 
 /* the rolling text right after the ifm logo, set as default in constants.DEFAULT_SCROLLING_TEXT */
-function setScrollingText(textForScrolling) {
-    document.getElementsByClassName("ifmxScrollText")[0].innerHTML = textForScrolling;
+export function setScrollingText(textForScrolling) {
+    document.getElementsByClassName(constants.IFMX_SCROLL_TEXT_CLASS_NAME)[0].innerHTML = textForScrolling;
 }
-window.setScrollingText = setScrollingText;
-
 
 function refreshScrollingTextAnimation() {
-    const el = document.querySelector(".ifmxScrollText");
-    el.style.animation = window.NONE;
+    const el = document.getElementsByClassName(constants.IFMX_SCROLL_TEXT_CLASS_NAME)[0];
+    el.style.animation = constants.NONE;
     void el.offsetWidth;
-    el.style.animation = window.EMPTY_VAL;
+    el.style.animation = constants.EMPTY_VAL;
 }
 
 /* set the message displayed after the channels */
-function displayMessage(message) {
-    feedHTML(window.DISPLAY_MESSAGE_BOX_ID, message);
+export function displayMessage(message) {
+    feedHTML(constants.DISPLAY_MESSAGE_BOX_ID, message);
 }
-window.displayMessage = displayMessage;
 
 /* utility function for changing inner html given an element id */
-function feedHTML(elementId, value) {
+export function feedHTML(elementId, value) {
     document.getElementById(elementId).innerHTML = value;
 }
 /* utility function for showing an element in html, used for the "now playing" modal */
-function showElement(element) {
-    element.style.display = window.BLOCK;
+export function showElement(element) {
+    element.style.display = constants.BLOCK;
 }
 /* utility function for hiding an element in html, used for the "now playing" modal */
-function hideElement(element) {
-    element.style.display = window.NONE;
+export function hideElement(element) {
+    element.style.display = constants.NONE;
 }
