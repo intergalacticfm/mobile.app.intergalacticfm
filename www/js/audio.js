@@ -51,6 +51,12 @@ export function stop() {
     }
 }
 
+function isAndroidMusicServiceAvailable() {
+    return typeof cordova !== 'undefined' &&
+        cordova.plugins &&
+        cordova.plugins.MusicService;
+}
+
 // plays the channel stream url
 export async function playChannel(channelNumber) {
     var channelTitle = 'Unknown';
