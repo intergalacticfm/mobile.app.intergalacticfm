@@ -17,6 +17,7 @@
         "@globules-io/cordova-plugin-disable-font-scaling": "^1.0.3",
         "cordova-android": "^14.0.1",
         "cordova-ios": "^8.0.0",
+        "cordova-plugin-app-version": "^0.1.14",
         "cordova-plugin-foreground-play": "file:cordova-plugin-foreground-play",
         "jsdom": "^28.1.0",
         "vitest": "^4.0.18"
@@ -27,7 +28,8 @@
             "ios"
         ],
         "plugins": {
-            "cordova-plugin-foreground-play": {}
+            "cordova-plugin-foreground-play": {},
+            "cordova-plugin-app-version": {}
         }
     },
     "dependencies": {

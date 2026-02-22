@@ -2,13 +2,14 @@ import * as constants from './constants.js';
 
 export let fetchedStations = [];
 export let audioContext;
+let appVersion = "";
 
 window.addEventListener('DOMContentLoaded', () => {
     if (!fetchedStations) {
         fetchStations();
     }
 
-    setScrollingText(constants.DEFAULT_SCROLLING_TEXT);
+    updateScrollingText();
     refreshScrollingTextAnimation();
     // unlock iOS audio context
     if (!audioContext) {
@@ -37,12 +38,21 @@ window.addEventListener('DOMContentLoaded', () => {
         });
 });
 
-var cordova;
-
 /*
 this function is for using the android plugin, cordova libraries will not be available before this event has triggered
 */
 function onDeviceReady() {
+    // app version
+    if (
+        typeof cordova !== "undefined" &&
+        cordova.getAppVersion &&
+        typeof cordova.getAppVersion.getVersionNumber === "function"
+    ) {
+        cordova.getAppVersion.getVersionNumber().then(function (version) {
+            appVersion = version;
+            updateScrollingText();
+        });
+    }
     if (isAndroidMusicServiceAvailable()) {
         // android
         cordova.plugins.MusicService.start(
@@ -59,7 +69,7 @@ function onDeviceReady() {
 
 function isAndroidMusicServiceAvailable() {
     return (
-        constants.cordova &&
+        typeof cordova !== "undefined" &&
         cordova.platformId === "android" &&
         cordova.plugins &&
         cordova.plugins.MusicService &&
@@ -108,6 +118,16 @@ export async function fetchStations() {
 }
 
 /* the rolling text right after the ifm logo, set as default in constants.DEFAULT_SCROLLING_TEXT */
+export function updateScrollingText(customText) {
+    const baseText = customText || constants.DEFAULT_SCROLLING_TEXT;
+
+    const fullText = appVersion ?
+        baseText + " - " + appVersion :
+        baseText;
+
+    setScrollingText(fullText);
+}
+
 export function setScrollingText(textForScrolling) {
     document.getElementsByClassName(constants.IFMX_SCROLL_TEXT_CLASS_NAME)[0].innerHTML = textForScrolling;
 }

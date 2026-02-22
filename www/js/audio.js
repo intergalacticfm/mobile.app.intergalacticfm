@@ -7,7 +7,8 @@ import {
     fetchedStations,
     setScrollingText,
     fetchStations,
-    audioContext
+    audioContext,
+    updateScrollingText
 } from './index.js';
 
 var currentNowPlayingUrl;
@@ -295,8 +296,8 @@ export function reset() {
     hideElement(document.getElementsByClassName(constants.CLOSE)[0]);
     hideElement(document.getElementById(constants.TRACK_INFO_MODAL_ID));
     fetchStations();
+    updateScrollingText();
     showElement(document.getElementById(constants.CONTAINER_ID));
-    setScrollingText(constants.DEFAULT_SCROLLING_TEXT);
     document.getElementById(constants.CBS_BUTTON_ID).classList.remove(constants.IS_DISABLED_CSS_CLASS);
     document.getElementById(constants.DF_BUTTON_ID).classList.remove(constants.IS_DISABLED_CSS_CLASS);
     document.getElementById(constants.TDM_BUTTON_ID).classList.remove(constants.IS_DISABLED_CSS_CLASS);
