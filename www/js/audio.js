@@ -19,6 +19,12 @@ var previousTrackHash = constants.EMPTY_VAL;
 var previousExtractedCoverHTML = constants.EMPTY_VAL;
 var AUDIO_PLAYER;
 
+const channelButtons = [
+    document.getElementById(constants.CBS_BUTTON_ID),
+    document.getElementById(constants.DF_BUTTON_ID),
+    document.getElementById(constants.TDM_BUTTON_ID)
+];
+
 window.addEventListener('DOMContentLoaded', () => {
     // bind the channel buttons to the playChannel function
     document.getElementById(constants.CBS_BUTTON_ID).addEventListener(constants.CLICK_EVENT_NAME, function () {
@@ -40,6 +46,16 @@ window.addEventListener('DOMContentLoaded', () => {
         reset();
     });
     AUDIO_PLAYER = document.getElementById('player');
+    if (isTouchDevice()) {
+        channelButtons.forEach(btn => {
+            // prevents involountary selection
+            btn.style.userSelect = 'none';
+            btn.style.webkitUserSelect = 'none';
+            btn.style.msUserSelect = 'none';
+            btn.style.MozUserSelect = 'none';
+
+        });
+    }
 });
 
 // stop the audio player
@@ -58,8 +74,23 @@ function isAndroidMusicServiceAvailable() {
         cordova.plugins.MusicService;
 }
 
+function isTouchDevice() {
+    return ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+}
+
+function disableChannelButtons() {
+    channelButtons.forEach(b => b.disabled = true);
+}
+
+function enableChannelButtons() {
+    channelButtons.forEach(b => b.disabled = false);
+}
+
 // plays the channel stream url
 export async function playChannel(channelNumber) {
+
+    disableChannelButtons();
+
     var channelTitle = 'Unknown';
     if (!fetchedStations || fetchedStations.length === 0) {
         await fetchStations();
@@ -91,6 +122,8 @@ export async function playChannel(channelNumber) {
         console.log(errorMessage);
         reset();
         displayMessage(errorMessage);
+    } finally {
+        enableChannelButtons();
     }
 }
 
